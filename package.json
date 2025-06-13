@@ -1,0 +1,59 @@
+{
+  "name": "void-vm",
+  "version": "0.0.1",
+  "description": "VoidVM - Virtual Machine Management Platform",
+  "private": true,
+  "author": "kian",
+  "license": "MIT",
+  "keywords": [
+    "virtual-machine",
+    "qemu",
+    "vue",
+    "node",
+    "vm-management"
+  ],
+  "scripts": {
+    "dev": "pnpm run --parallel dev",
+    "dev:web": "pnpm --filter @void-vm/web dev",
+    "dev:server": "pnpm --filter @void-vm/server dev",
+    "build": "pnpm run --recursive build",
+    "build:web": "pnpm --filter @void-vm/web build",
+    "build:server": "pnpm --filter @void-vm/server build",
+    "lint": "pnpm run --recursive lint",
+    "lint:fix": "pnpm run --recursive lint:fix",
+    "type-check": "pnpm run --recursive type-check",
+    "test": "pnpm run --recursive test",
+    "clean": "pnpm run --recursive clean",
+    "prepare": "husky install",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "format:web": "prettier --write apps/web/src",
+    "format:server": "prettier --write apps/server/src",
+    "docs:dev": "pnpm --filter @void-vm/docs dev",
+    "docs:build": "vitepress build docs",
+    "docs:preview": "vitepress preview docs"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^19.8.1",
+    "@commitlint/config-conventional": "^19.8.1",
+    "@types/node": "^24.0.0",
+    "@typescript-eslint/eslint-plugin": "^8.34.0",
+    "@typescript-eslint/parser": "^8.34.0",
+    "eslint": "^9.28.0",
+    "eslint-config-prettier": "^10.1.5",
+    "eslint-plugin-prettier": "^5.4.1",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.1.0",
+    "prettier": "^3.5.3",
+    "typescript": "^5.8.3"
+  },
+  "lint-staged": {
+    "*.{js,ts,vue}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{json,md,yml,yaml}": [
+      "prettier --write"
+    ]
+  }
+}

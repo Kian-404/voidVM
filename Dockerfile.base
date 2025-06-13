@@ -1,0 +1,87 @@
+FROM ubuntu:20.04
+
+ENV DEBIAN_FRONTEND=noninteractive
+ENV TZ=Asia/Shanghai
+
+
+# 安装基础工具和编译依赖
+RUN apt-get update && apt-get install -y \
+    curl \
+    wget \
+    git \
+    build-essential \
+    python3 \
+    python3-pip \
+    ninja-build \
+    libglib2.0-dev \
+    libfdt-dev \
+    libpixman-1-dev \
+    zlib1g-dev \
+    libnfs-dev \
+    libiscsi-dev \
+    pkg-config \
+    meson \
+    libslirp-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# 安装Node.js 23.x
+RUN curl -fsSL https://nodejs.org/dist/v23.6.0/node-v23.6.0-linux-x64.tar.xz -o node.tar.xz \
+    && tar -xJf node.tar.xz -C /usr/local --strip-components=1 \
+    && rm node.tar.xz
+
+# 验证Node.js安装
+RUN node --version && npm --version
+
+# 下载并编译QEMU (8.2.0)
+RUN cd /tmp \
+    && wget https://download.qemu.org/qemu-8.2.0.tar.xz \
+    && tar xvf qemu-8.2.0.tar.xz \
+    && cd qemu-8.2.0 \
+    && ./configure --target-list=x86_64-softmmu,i386-softmmu,aarch64-softmmu --enable-slirp \
+    && make -j$(nproc) \
+    && make install \
+    && cd / \
+    && rm -rf /tmp/qemu-8.2.0*
+
+# 验证QEMU版本
+RUN qemu-system-x86_64 --version
+
+# 安装npm工具
+RUN npm install -g yarn pm2 nodemon
+RUN npm config set registry https://registry.npmmirror.com/
+
+
+
+RUN mkdir -p /app
+WORKDIR /app
+
+# why clone fail? help me
+# # 克隆NoVNC
+# RUN git clone --depth 1 https://github.com/novnc/noVNC.git /opt/novnc
+# # 克隆NoVNC with完整错误处理
+# RUN mkdir -p /opt && \
+#     echo "Attempting to clone NoVNC..." && \
+#     (git clone --depth 1 --progress --verbose https://github.com/novnc/noVNC.git /opt/novnc && \
+#      echo "Git clone successful") || \
+#     (echo "Git clone failed, trying wget..." && \
+#      cd /opt && \
+#      wget --timeout=60 --tries=3 https://github.com/novnc/noVNC/archive/refs/heads/master.zip -O novnc.zip && \
+#      unzip novnc.zip && \
+#      mv noVNC-master novnc && \
+#      rm novnc.zip && \
+#      echo "Wget download successful") || \
+#     (echo "Wget failed, trying curl..." && \
+#      cd /opt && \
+#      curl -L --connect-timeout 60 --max-time 300 --retry 3 \
+#           https://github.com/novnc/noVNC/archive/refs/heads/master.zip -o novnc.zip && \
+#      unzip novnc.zip && \
+#      mv noVNC-master novnc && \
+#      rm novnc.zip && \
+#      echo "Curl download successful") && \
+#     echo "Verifying NoVNC installation..." && \
+#     ls -la /opt/novnc && \
+#     test -f /opt/novnc/vnc.html && \
+#     echo "NoVNC installation verified successfully!"
+
+EXPOSE 3000
+CMD ["/bin/bash"]
