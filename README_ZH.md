@@ -17,6 +17,25 @@ voidVM 是一个现代化的虚拟机管理平台，提供直观的 Web 界面�
 - 🔧 **在线管理** - 创建、启动、停止、删除虚拟机
 - 📊 **实时监控** - 虚拟机状态和性能监控
 
+## 💡 待实现功能
+
+- [x] 前端页面优化(Bootstrap -> TailwindCSS) 待定
+- [x] 关联用户和虚拟机(Supabase Auth and Virtual Machines)
+- [x] 虚拟机状态监控(QMP)
+- [x] 虚拟机创建流程优化(镜像管理)
+- [x] 虚拟机镜像管理(镜像上传、删除、查看)
+- [x] 虚拟机网络管理(虚拟网络配置)
+- [x] 虚拟机文档管理(虚拟机文档上传、删除、查看)
+- [x] 虚拟机存储管理(虚拟机存储配置)
+- [x] 虚拟机快照管理(虚拟机快照创建、删除、查看)
+- [x] 后端JavaScript升级Typescript再升级到Bun
+- [x] 项目测试添加(使用Vitest)
+- [x] 项目部署优化(使用Docker)
+- [x] 项目文档优化(使用VitePress)
+- [x] 项目代码优化(使用ESLint和Prettier)
+- [x] 项目CI/CD优化(使用GitHub Actions)
+- [x] 项目性能优化(使用Bun和Vitest)
+
 ## 🛠️ 技术栈
 
 - **前端**: Vue + Composition API

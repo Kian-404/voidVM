@@ -17,6 +17,25 @@ voidVM is a modern virtual machine management platform that provides an intuitiv
 - 🔧 **Online Management** - Create, start, stop, and delete virtual machines
 - 📊 **Real-time Monitoring** - Virtual machine status and performance monitoring
 
+## 💡 Features to be Implemented
+
+- [x] Frontend page optimization (Bootstrap -> TailwindCSS) To be determined
+- [x] Associate users with virtual machines (Supabase Auth and Virtual Machines)
+- [x] Virtual machine status monitoring (QMP)
+- [x] Virtual machine creation process optimization (Image management)
+- [x] Virtual machine image management (Image upload, delete, view)
+- [x] Virtual machine network management (Virtual network configuration)
+- [x] Virtual machine document management (VM document upload, delete, view)
+- [x] Virtual machine storage management (VM storage configuration)
+- [x] Virtual machine snapshot management (VM snapshot creation, deletion, viewing)
+- [x] Backend JavaScript upgrade to TypeScript then upgrade to Bun
+- [x] Project testing addition (Using Vitest)
+- [x] Project deployment optimization (Using Docker)
+- [x] Project documentation optimization (Using VitePress)
+- [x] Project code optimization (Using ESLint and Prettier)
+- [x] Project CI/CD optimization (Using GitHub Actions)
+- [x] Project performance optimization (Using Bun and Vitest)
+
 ## 🛠️ Tech Stack
 
 - **Frontend**: Vue + Composition API
