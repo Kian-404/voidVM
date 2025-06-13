@@ -14,7 +14,7 @@ export default withMermaid(
     title: 'VoidVM',
     description: '现代化的虚拟机管理平台',
     lang: 'zh-CN',
-    base: '/void-vm/',
+    base: '/',
     ignoreDeadLinks: true,
     head: [
       ['link', { rel: 'icon', href: '/void-vm/favicon.ico' }],
