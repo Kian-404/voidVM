@@ -1,0 +1,95 @@
+/* 全局 Mermaid 样式增强 */
+.mermaid {
+  margin: 16px 0;
+  text-align: center;
+}
+
+.mermaid svg {
+  max-width: 100%;
+  height: auto;
+}
+
+/* 为没有使用组件的 mermaid 图表添加基础缩放 */
+.mermaid:not(.enhanced) {
+  cursor: zoom-in;
+  border: 1px solid #e1e5e9;
+  border-radius: 6px;
+  padding: 16px;
+  background-color: #fafbfc;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.mermaid:not(.enhanced):hover {
+  transform: scale(1.02);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* 暗色主题适配 */
+.dark .mermaid-container,
+.dark .mermaid:not(.enhanced) {
+  background-color: var(--vp-c-bg-soft);
+  border-color: var(--vp-c-border);
+}
+
+.dark .modal-content {
+  background-color: var(--vp-c-bg);
+  color: var(--vp-c-text-1);
+}
+
+.dark .modal-header {
+  background-color: var(--vp-c-bg-soft);
+  border-color: var(--vp-c-border);
+}
+
+.dark .control-btn {
+  background-color: var(--vp-c-bg-soft);
+  border-color: var(--vp-c-border);
+  color: var(--vp-c-text-1);
+}
+
+.dark .control-btn:hover:not(:disabled) {
+  background-color: var(--vp-c-bg-mute);
+}
+
+.dark .scale-info {
+  background-color: var(--vp-c-bg-soft);
+  border-color: var(--vp-c-border);
+  color: var(--vp-c-text-1);
+}
+
+/* 滚动条样式 */
+.modal-body::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.modal-body::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+.modal-body::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 4px;
+}
+
+.modal-body::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+/* 加载动画 */
+@keyframes mermaidLoad {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.mermaid {
+  animation: mermaidLoad 0.5s ease-out;
+}

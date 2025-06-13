@@ -1,0 +1,88 @@
+:root {
+  /* 品牌色彩 */
+  --vp-c-brand-1: #646cff;
+  --vp-c-brand-2: #747bff;
+  --vp-c-brand-3: #535bf2;
+
+  /* VoidVM 专用颜色 */
+  --vp-c-void-primary: #f8fafc;
+  --vp-c-void-secondary: #e2e8f0;
+  --vp-c-void-accent: #0ea5e9;
+  --vp-c-void-success: #059669;
+  --vp-c-void-warning: #d97706;
+  --vp-c-void-error: #dc2626;
+
+  /* 自定义字体 */
+  --vp-font-family-base: 'Inter', 'Roboto', sans-serif;
+  --vp-font-family-mono: 'Fira Code', 'JetBrains Mono', monospace;
+}
+
+/* 暗色主题适配 */
+.dark {
+  --vp-c-brand-1: #a855f7;
+  --vp-c-brand-2: #9333ea;
+  --vp-c-brand-3: #7c3aed;
+
+  /* VoidVM 专用颜色 */
+  --vp-c-void-primary: #1a1a2e;
+  --vp-c-void-secondary: #16213e;
+  --vp-c-void-accent: #0f3460;
+  --vp-c-void-success: #4ade80;
+  --vp-c-void-warning: #facc15;
+  --vp-c-void-error: #ef4444;
+}
+
+/* 自定义样式 */
+.custom-block.tip {
+  background-color: var(--vp-c-void-primary);
+  border-color: var(--vp-c-brand-1);
+}
+
+/* 代码块样式 */
+div[class*='language-'] {
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+/* API 表格样式 */
+.api-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 20px 0;
+}
+
+.api-table th,
+.api-table td {
+  padding: 12px;
+  text-align: left;
+  border-bottom: 1px solid var(--vp-c-divider);
+}
+
+.api-table th {
+  background-color: var(--vp-c-bg-soft);
+  font-weight: 600;
+}
+
+/* 状态徽章 */
+.status-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.status-running {
+  background-color: var(--vp-c-void-success);
+  color: white;
+}
+
+.status-stopped {
+  background-color: var(--vp-c-void-error);
+  color: white;
+}
+
+.status-pending {
+  background-color: var(--vp-c-void-warning);
+  color: black;
+}
