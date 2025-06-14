@@ -17,7 +17,7 @@ export default withMermaid(
     base: '/',
     ignoreDeadLinks: true,
     head: [
-      ['link', { rel: 'icon', href: '/void-vm/favicon.ico' }],
+      ['link', { rel: 'icon', href: '/logo.svg' }],
       ['meta', { name: 'theme-color', content: '#646cff' }],
       ['meta', { name: 'keywords', content: 'virtual machine, qemu, vm management, vue, node' }],
     ],

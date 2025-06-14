@@ -93,4 +93,8 @@ npm run dev
 .tech-stack img {
 height: 28px;
 }
+.VPImage.image-src{
+  width: 100%;
+  object-fit: cover;
+}
 </style>
