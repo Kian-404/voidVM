@@ -2,7 +2,7 @@
   <div class="container">
     <div class="row mb-4">
       <div class="col-md-8">
-        <h1>QEMU 虚拟机管理器</h1>
+        <h1>虚拟机管理</h1>
         <p class="lead">
           便捷管理您的 QEMU 虚拟机，支持创建、启动、停止和远程访问
         </p>

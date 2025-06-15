@@ -14,7 +14,7 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 
-const title = ref('QEMU 虚拟机管理器')
+const title = ref('虚拟机管理')
 </script>
 
 <style scoped></style>
