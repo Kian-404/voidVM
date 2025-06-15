@@ -1,139 +1,159 @@
 <template>
-  <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+  <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow">
     <div class="container">
-      <router-link class="navbar-brand d-flex align-items-center" to="/">
-        <i class="bi bi-hdd-network me-2"></i>
-        voidVM
+      <!-- 品牌Logo -->
+      <router-link class="navbar-brand fw-bold d-flex align-items-center" to="/">
+        <i class="bi bi-hdd-network me-2 fs-4"></i>
+        <span>{{ brandName }}</span>
       </router-link>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+
+      <!-- 移动端切换按钮 -->
+      <button
+        class="navbar-toggler"
+        type="button"
+        data-bs-toggle="collapse"
+        data-bs-target="#navbarNav"
+      >
         <span class="navbar-toggler-icon"></span>
       </button>
+
       <div class="collapse navbar-collapse" id="navbarNav">
+        <!-- 主导航菜单 -->
         <ul class="navbar-nav me-auto">
-          <li class="nav-item">
+          <li v-for="item in mainNavItems" :key="item.name" class="nav-item">
             <router-link
+              v-if="!item.requireAuth || authStore.isAuthenticated"
               class="nav-link"
-              to="/"
+              :to="item.path"
               active-class="active"
-              exact-active-class="active">
-              <i class="bi bi-house-door me-1"></i> 首页
+              :exact-active-class="item.exact ? 'active' : ''"
+            >
+              <i :class="item.icon + ' me-1'"></i>{{ item.name }}
             </router-link>
           </li>
-
-          <!-- 仅对已认证用户显示的导航项 -->
-          <template v-if="authStore.isAuthenticated">
-            <li class="nav-item">
-              <router-link
-                class="nav-link"
-                to="/dashboard"
-                active-class="active">
-                <i class="bi bi-speedometer2 me-1"></i> 控制台
-              </router-link>
-            </li>
-            <li class="nav-item">
-              <router-link
-                class="nav-link"
-                to="/vms"
-                active-class="active">
-                <i class="bi bi-pc-display me-1"></i> 虚拟机
-              </router-link>
-            </li>
-            <li class="nav-item">
-              <router-link
-                class="nav-link"
-                to="/images"
-                active-class="active">
-                <i class="bi bi-disc me-1"></i> 镜像管理
-              </router-link>
-            </li>
-            <!-- <li class="nav-item">
-              <router-link
-                class="nav-link"
-                to="/profile"
-                active-class="active">
-                <i class="bi bi-person me-1"></i> 个人资料
-              </router-link>
-            </li>
-            <li class="nav-item">
-              <router-link
-                class="nav-link"
-                to="/settings"
-                active-class="active">
-                <i class="bi bi-gear me-1"></i> 系统设置
-              </router-link>
-            </li> -->
-          </template>
         </ul>
 
-        <!-- 用户认证区域 -->
+        <!-- 右侧用户区域 -->
         <ul class="navbar-nav">
           <template v-if="authStore.isAuthenticated">
-            <!-- 通知图标 -->
-            <li class="nav-item dropdown">
-              <a class="nav-link position-relative" href="#" id="notificationsDropdown" role="button"
-                data-bs-toggle="dropdown" aria-expanded="false">
+            <!-- 通知菜单 -->
+            <li class="nav-item dropdown me-2">
+              <a
+                class="nav-link position-relative"
+                href="#"
+                id="notificationsDropdown"
+                role="button"
+                data-bs-toggle="dropdown"
+              >
                 <i class="bi bi-bell"></i>
-                <span v-if="notificationCount > 0"
-                  class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                <span
+                  v-if="notificationCount > 0"
+                  class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger small"
+                >
                   {{ notificationCount }}
-                  <span class="visually-hidden">未读通知</span>
                 </span>
               </a>
-              <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="notificationsDropdown">
-                <li v-if="notifications.length === 0">
-                  <span class="dropdown-item text-muted">暂无通知</span>
+              <ul class="dropdown-menu dropdown-menu-end shadow" style="min-width: 300px">
+                <li>
+                  <h6 class="dropdown-header d-flex justify-content-between">
+                    <span><i class="bi bi-bell me-2"></i>{{ notificationsHeader }}</span>
+                    <small class="text-muted">{{ notificationCount }} 条新消息</small>
+                  </h6>
                 </li>
-                <li v-for="(notification, index) in notifications" :key="index">
-                  <a class="dropdown-item" href="#">
-                    <small class="text-muted">{{ notification.time }}</small>
-                    <div>{{ notification.message }}</div>
-                  </a>
-                </li>
+                <li><hr class="dropdown-divider" /></li>
+
+                <div style="max-height: 250px; overflow-y: auto">
+                  <li v-if="notifications.length === 0" class="px-3 py-2">
+                    <div class="text-center text-muted py-2">
+                      <i class="bi bi-bell-slash fs-4"></i>
+                      <div class="small">{{ noNotificationsText }}</div>
+                    </div>
+                  </li>
+
+                  <li v-for="(notification, index) in notifications" :key="index">
+                    <a class="dropdown-item" href="#" @click.prevent="markAsRead(index)">
+                      <div class="d-flex align-items-start">
+                        <i
+                          :class="getNotificationIcon(notification.type)"
+                          class="me-2 mt-1"
+                          :style="{ color: getNotificationColor(notification.type) }"
+                        ></i>
+                        <div class="flex-grow-1">
+                          <div class="fw-medium small">{{ notification.message }}</div>
+                          <small class="text-muted">{{ notification.time }}</small>
+                        </div>
+                        <span
+                          v-if="!notification.read"
+                          class="badge bg-primary rounded-circle p-1"
+                        ></span>
+                      </div>
+                    </a>
+                  </li>
+                </div>
               </ul>
             </li>
 
             <!-- 用户菜单 -->
             <li class="nav-item dropdown">
-              <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="userDropdown" role="button"
-                data-bs-toggle="dropdown" aria-expanded="false">
-                <span class="avatar-circle me-2">
+              <a
+                class="nav-link dropdown-toggle d-flex align-items-center"
+                href="#"
+                id="userDropdown"
+                role="button"
+                data-bs-toggle="dropdown"
+              >
+                <span
+                  class="user-avatar bg-light text-primary rounded-circle d-flex align-items-center justify-content-center me-2 fw-bold"
+                >
                   {{ getUserInitials() }}
                 </span>
                 <span class="d-none d-md-inline">{{ getUserDisplayName() }}</span>
               </a>
-              <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+
+              <ul class="dropdown-menu dropdown-menu-end shadow">
                 <li>
-                  <router-link class="dropdown-item" to="/profile">
-                    <i class="bi bi-person me-2"></i> 个人资料
+                  <div class="dropdown-header">
+                    <div class="d-flex align-items-center">
+                      <span
+                        class="user-avatar bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-2 fw-bold"
+                      >
+                        {{ getUserInitials() }}
+                      </span>
+                      <div>
+                        <div class="fw-medium">{{ getUserDisplayName() }}</div>
+                        <small class="text-muted">{{ getUserEmail() }}</small>
+                      </div>
+                    </div>
+                  </div>
+                </li>
+                <li><hr class="dropdown-divider" /></li>
+
+                <li v-for="item in userMenuItems" :key="item.name">
+                  <router-link class="dropdown-item" :to="item.path">
+                    <i :class="item.icon + ' me-2'"></i>{{ item.name }}
                   </router-link>
                 </li>
-                <li>
-                  <router-link class="dropdown-item" to="/settings">
-                    <i class="bi bi-gear me-2"></i> 系统设置
-                  </router-link>
-                </li>
-                <li>
-                  <hr class="dropdown-divider">
-                </li>
+
+                <li><hr class="dropdown-divider" /></li>
                 <li>
                   <a class="dropdown-item text-danger" href="#" @click.prevent="handleLogout">
-                    <i class="bi bi-box-arrow-right me-2"></i> 退出登录
+                    <i class="bi bi-box-arrow-right me-2"></i>{{ logoutText }}
                   </a>
                 </li>
               </ul>
             </li>
           </template>
 
+          <!-- 未登录用户菜单 -->
           <template v-else>
             <li class="nav-item">
               <router-link class="nav-link" to="/login" active-class="active">
-                <i class="bi bi-box-arrow-in-right me-1"></i> 登录
+                <i class="bi bi-box-arrow-in-right me-1"></i>{{ loginText }}
               </router-link>
             </li>
             <li class="nav-item">
-              <router-link class="nav-link btn btn-sm btn-outline-light ms-2" to="/register"
-                active-class="btn-light text-dark">
-                注册
+              <router-link class="btn btn-outline-light btn-sm ms-2" to="/register">
+                <i class="bi bi-person-plus me-1"></i>{{ registerText }}
               </router-link>
             </li>
           </template>
@@ -144,125 +164,183 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
-import { useAuthStore } from '../stores/auth';
-import { useRouter } from 'vue-router';
+import { ref, computed } from 'vue'
+import { useAuthStore } from '../stores/auth'
+import { useRouter } from 'vue-router'
 
-const authStore = useAuthStore();
-const router = useRouter();
+// 文本内容
+const brandName = 'voidVM'
+const notificationsHeader = '通知'
+const noNotificationsText = '暂无新通知'
+const loginText = '登录'
+const registerText = '注册'
+const logoutText = '退出登录'
 
-// 模拟通知数据
+// 主导航菜单配置
+const mainNavItems = [
+  {
+    name: '首页',
+    path: '/',
+    icon: 'bi bi-house-door',
+    exact: true,
+    requireAuth: false,
+  },
+  {
+    name: '控制台',
+    path: '/dashboard',
+    icon: 'bi bi-speedometer2',
+    exact: false,
+    requireAuth: true,
+  },
+  {
+    name: '虚拟机',
+    path: '/vms',
+    icon: 'bi bi-pc-display',
+    exact: false,
+    requireAuth: true,
+  },
+  {
+    name: '镜像管理',
+    path: '/images',
+    icon: 'bi bi-disc',
+    exact: false,
+    requireAuth: true,
+  },
+]
+
+// 用户菜单配置
+const userMenuItems = [
+  {
+    name: '个人资料',
+    path: '/profile',
+    icon: 'bi bi-person',
+  },
+  {
+    name: '系统设置',
+    path: '/settings',
+    icon: 'bi bi-gear',
+  },
+]
+
+// 响应式数据
+const authStore = useAuthStore()
+const router = useRouter()
+
+// 通知数据
 const notifications = ref([
-  { message: '虚拟机 "Ubuntu-Server" 已成功启动', time: '10分钟前' },
-  { message: '系统更新可用', time: '1小时前' }
-]);
+  {
+    message: '虚拟机 "Ubuntu-Server" 已成功启动',
+    time: '10分钟前',
+    type: 'success',
+    read: false,
+  },
+  {
+    message: '镜像上传完成',
+    time: '25分钟前',
+    type: 'info',
+    read: false,
+  },
+  {
+    message: '系统将于今晚进行维护',
+    time: '1小时前',
+    type: 'warning',
+    read: true,
+  },
+])
 
-const notificationCount = computed(() => notifications.value.length);
+// 计算属性
+const notificationCount = computed(() => notifications.value.filter(n => !n.read).length)
 
-// 获取用户显示名称
+// 方法
 const getUserDisplayName = () => {
-  if (!authStore.user) return '';
-  return authStore.user.user_metadata?.full_name || authStore.user.email?.split('@')[0] || '用户';
-};
+  if (!authStore.user) return ''
+  return authStore.user.user_metadata?.full_name || authStore.user.email?.split('@')[0] || '用户'
+}
 
-// 获取用户名首字母作为头像
+const getUserEmail = () => {
+  if (!authStore.user) return ''
+  return authStore.user.email || ''
+}
+
 const getUserInitials = () => {
-  if (!authStore.user) return '';
+  if (!authStore.user) return 'U'
 
-  const fullName = authStore.user.user_metadata?.full_name;
+  const fullName = authStore.user.user_metadata?.full_name
   if (fullName) {
-    const names = fullName.split(' ');
+    const names = fullName.split(' ')
     if (names.length >= 2) {
-      return `${names[0][0]}${names[1][0]}`.toUpperCase();
+      return `${names[0][0]}${names[1][0]}`.toUpperCase()
     }
-    return fullName[0].toUpperCase();
+    return fullName[0].toUpperCase()
   }
 
-  const email = authStore.user.email;
-  return email ? email[0].toUpperCase() : 'U';
-};
+  const email = authStore.user.email
+  return email ? email[0].toUpperCase() : 'U'
+}
 
-// 退出登录
+const getNotificationIcon = (type: string) => {
+  const icons = {
+    success: 'bi bi-check-circle-fill',
+    info: 'bi bi-info-circle-fill',
+    warning: 'bi bi-exclamation-triangle-fill',
+    danger: 'bi bi-x-circle-fill',
+  }
+  return icons[type as keyof typeof icons] || 'bi bi-bell-fill'
+}
+
+const getNotificationColor = (type: string) => {
+  const colors = {
+    success: '#198754',
+    info: '#0dcaf0',
+    warning: '#ffc107',
+    danger: '#dc3545',
+  }
+  return colors[type as keyof typeof colors] || '#6c757d'
+}
+
+const markAsRead = (index: number) => {
+  notifications.value[index].read = true
+}
+
 const handleLogout = async () => {
   try {
-    const data = await authStore.logout();
-    console.log('data', data);
+    const data = await authStore.logout()
     if (data !== undefined) {
-      router.push('/login');
+      router.push('/login')
     } else {
-      router.push('/');
+      router.push('/')
     }
   } catch (error) {
-    console.error('Logout error:', error);
-    router.push('/login');
+    console.error('Logout error:', error)
+    router.push('/login')
   }
-
-};
+}
 </script>
 
 <style scoped>
-.navbar {
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+.user-avatar {
+  width: 32px;
+  height: 32px;
+  font-size: 14px;
 }
 
-/* 激活状态样式 */
 .nav-link.active {
-  color: #ffffff !important;
-  background-color: rgba(255, 255, 255, 0.1);
+  background-color: rgba(255, 255, 255, 0.2);
   border-radius: 0.375rem;
   font-weight: 500;
 }
 
-.nav-link.active i {
-  color: #ffffff;
-}
-
-/* 悬停效果 */
 .nav-link:hover {
-  color: #ffffff;
-  background-color: rgba(255, 255, 255, 0.05);
+  background-color: rgba(255, 255, 255, 0.1);
   border-radius: 0.375rem;
 }
 
-/* 注册按钮激活状态 */
-.btn-outline-light.active {
-  background-color: #f8f9fa !important;
-  color: #212529 !important;
-  border-color: #f8f9fa !important;
-}
-
-/* 其他样式保持不变 */
-.avatar-circle {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 30px;
-  height: 30px;
-  background-color: #007bff;
+.dropdown-item:hover {
+  background-color: var(--bs-primary);
   color: white;
-  border-radius: 50%;
-  font-size: 14px;
-  font-weight: bold;
 }
 
-.nav-link {
-  padding: 0.5rem 1rem;
-  transition: all 0.15s ease-in-out;
-}
-
-.dropdown-item {
-  padding: 0.5rem 1rem;
-}
-
-.dropdown-item i {
-  width: 1rem;
-  text-align: center;
-}
-
-/* 响应式调整 */
-@media (max-width: 992px) {
-  .navbar-nav .nav-item {
-    padding: 0.25rem 0;
-  }
+.dropdown-item:hover i {
+  color: white;
 }
 </style>
