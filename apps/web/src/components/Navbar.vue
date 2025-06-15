@@ -3,7 +3,7 @@
     <div class="container">
       <router-link class="navbar-brand d-flex align-items-center" to="/">
         <i class="bi bi-hdd-network me-2"></i>
-        QEMU 虚拟机管理系统
+        voidVM
       </router-link>
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
         <span class="navbar-toggler-icon"></span>
@@ -11,8 +11,8 @@
       <div class="collapse navbar-collapse" id="navbarNav">
         <ul class="navbar-nav me-auto">
           <li class="nav-item">
-            <router-link 
-              class="nav-link" 
+            <router-link
+              class="nav-link"
               to="/"
               active-class="active"
               exact-active-class="active">
@@ -23,40 +23,40 @@
           <!-- 仅对已认证用户显示的导航项 -->
           <template v-if="authStore.isAuthenticated">
             <li class="nav-item">
-              <router-link 
-                class="nav-link" 
+              <router-link
+                class="nav-link"
                 to="/dashboard"
                 active-class="active">
                 <i class="bi bi-speedometer2 me-1"></i> 控制台
               </router-link>
             </li>
             <li class="nav-item">
-              <router-link 
-                class="nav-link" 
+              <router-link
+                class="nav-link"
                 to="/vms"
                 active-class="active">
                 <i class="bi bi-pc-display me-1"></i> 虚拟机
               </router-link>
             </li>
             <li class="nav-item">
-              <router-link 
-                class="nav-link" 
+              <router-link
+                class="nav-link"
                 to="/images"
                 active-class="active">
                 <i class="bi bi-disc me-1"></i> 镜像管理
               </router-link>
             </li>
             <!-- <li class="nav-item">
-              <router-link 
-                class="nav-link" 
+              <router-link
+                class="nav-link"
                 to="/profile"
                 active-class="active">
                 <i class="bi bi-person me-1"></i> 个人资料
               </router-link>
             </li>
             <li class="nav-item">
-              <router-link 
-                class="nav-link" 
+              <router-link
+                class="nav-link"
                 to="/settings"
                 active-class="active">
                 <i class="bi bi-gear me-1"></i> 系统设置
