@@ -52,8 +52,6 @@ RUN npm config set registry https://registry.npmmirror.com/
 
 
 
-RUN mkdir -p /app
-WORKDIR /app
 
 # why clone fail? help me
 # # 克隆NoVNC
@@ -83,5 +81,4 @@ WORKDIR /app
 #     test -f /opt/novnc/vnc.html && \
 #     echo "NoVNC installation verified successfully!"
 
-EXPOSE 3000
 CMD ["/bin/bash"]

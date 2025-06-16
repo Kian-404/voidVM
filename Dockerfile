@@ -2,6 +2,8 @@
 # FROM test-node-ubuntu:latest
 FROM viod-vm-base:latest
 
+RUN mkdir -p /app
+
 # 设置工作目录
 WORKDIR /app
 
