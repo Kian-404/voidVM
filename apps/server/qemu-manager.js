@@ -427,12 +427,14 @@ class QemuManager {
         status: 'stopped',
         lastRunTime: new Date().toISOString(),
       })
+      this.processes.delete(vmName)
       return { vmName, status: 'stopped' }
     } catch (e) {
       await this.updateVMMetadata(vmName, {
         status: 'stopped',
         lastRunTime: new Date().toISOString(),
       })
+      this.processes.delete(vmName)
       return false
     }
   }
