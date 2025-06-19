@@ -3,7 +3,6 @@ FROM ubuntu:20.04
 ENV DEBIAN_FRONTEND=noninteractive
 ENV TZ=Asia/Shanghai
 
-
 # 安装基础工具和编译依赖
 RUN apt-get update && apt-get install -y \
     curl \
@@ -51,34 +50,11 @@ RUN npm install -g yarn pm2 nodemon
 RUN npm config set registry https://registry.npmmirror.com/
 
 
+# 安装NoVNC
+RUN wget -O /tmp/novnc.tar.gz https://github.com/novnc/noVNC/archive/refs/heads/master.tar.gz && \
+    tar -xzf /tmp/novnc.tar.gz -C /opt && \
+    mv /opt/noVNC-master /root/test/novnc && \
+    rm /tmp/novnc.tar.gz && \
+    echo "NoVNC installation verified successfully!"
 
-
-# why clone fail? help me
-# # 克隆NoVNC
-# RUN git clone --depth 1 https://github.com/novnc/noVNC.git /opt/novnc
-# # 克隆NoVNC with完整错误处理
-# RUN mkdir -p /opt && \
-#     echo "Attempting to clone NoVNC..." && \
-#     (git clone --depth 1 --progress --verbose https://github.com/novnc/noVNC.git /opt/novnc && \
-#      echo "Git clone successful") || \
-#     (echo "Git clone failed, trying wget..." && \
-#      cd /opt && \
-#      wget --timeout=60 --tries=3 https://github.com/novnc/noVNC/archive/refs/heads/master.zip -O novnc.zip && \
-#      unzip novnc.zip && \
-#      mv noVNC-master novnc && \
-#      rm novnc.zip && \
-#      echo "Wget download successful") || \
-#     (echo "Wget failed, trying curl..." && \
-#      cd /opt && \
-#      curl -L --connect-timeout 60 --max-time 300 --retry 3 \
-#           https://github.com/novnc/noVNC/archive/refs/heads/master.zip -o novnc.zip && \
-#      unzip novnc.zip && \
-#      mv noVNC-master novnc && \
-#      rm novnc.zip && \
-#      echo "Curl download successful") && \
-#     echo "Verifying NoVNC installation..." && \
-#     ls -la /opt/novnc && \
-#     test -f /opt/novnc/vnc.html && \
-#     echo "NoVNC installation verified successfully!"
-
-CMD ["/bin/bash"]
+# CMD ["/bin/bash"]
