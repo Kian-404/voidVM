@@ -1,5 +1,4 @@
 # 使用自定义基础镜像
-# FROM test-node-ubuntu:latest
 FROM viod-vm-base:latest
 
 RUN mkdir -p /app
@@ -23,8 +22,6 @@ COPY apps/server ./server/
 # 创建public目录并复制前端构建文件
 RUN mkdir -p ./server/public
 RUN cp -r ./web/dist/* ./server/public/
-# 如果前端输出是dist目录，则使用：
-# RUN cp -r ./web/dist/* ./server/public/
 
 # 设置工作目录到server
 WORKDIR /app/server

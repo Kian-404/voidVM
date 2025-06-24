@@ -57,4 +57,4 @@ RUN wget -O /tmp/novnc.tar.gz https://github.com/novnc/noVNC/archive/refs/heads/
     rm /tmp/novnc.tar.gz && \
     echo "NoVNC installation verified successfully!"
 
-# CMD ["/bin/bash"]
+CMD ["/bin/bash"]
