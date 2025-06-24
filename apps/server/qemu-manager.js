@@ -616,32 +616,6 @@ class QemuManager {
       throw new Error(`VM ${vmName} not found`)
     }
 
-    // 检查虚拟机是否正在运行
-    const isRunning = this.processes.has(vmName)
-
-    if (isRunning) {
-      // 如果虚拟机正在运行，使用 QEMU Monitor 命令卸载 ISO
-      try {
-        const processInfo = JSON.parse(this.processes.get(vmName))
-        const monitorPort = metadata.monitorPort || 55555
-
-        // 使用 nc (netcat) 发送 QEMU Monitor 命令卸载 ISO
-        const command = `echo "eject -f ide1-cd0" | nc localhost ${monitorPort}`
-
-        console.log(`Executing monitor command: ${command}`)
-        const { stdout, stderr } = await execPromise(command)
-
-        if (stderr && stderr.trim()) {
-          console.warn(`Warning during ISO unmount: ${stderr}`)
-        }
-
-        console.log(`ISO unmount result: ${stdout || 'Success'}`)
-      } catch (error) {
-        console.error(`Failed to unmount ISO via monitor: ${error.message}`)
-        throw new Error(`Failed to unmount ISO: ${error.message}`)
-      }
-    }
-
     // 更新虚拟机元数据，标记 ISO 已卸载
     const updatedMetadata = {
       isMountIso: mountStatus,
@@ -651,8 +625,6 @@ class QemuManager {
 
     // 保存更新后的元数据
     await this.updateVMMetadata(vmName, updatedMetadata)
-    // await this.stopVM(vmName, metadata.metadata.lastPid);
-    // await this.startVM({...metadata.config, vmName: metadata.config.name});
     console.log(`ISO unmounted and configuration updated for VM: ${vmName}`)
 
     return updatedMetadata
