@@ -1,30 +1,30 @@
 // routes/fileTransfer.js
-const express = require("express");
-const router = express.Router();
-const multer = require("multer");
-const path = require("path");
-const fs = require("fs-extra");
-require("../config/index");
+const express = require('express')
+const router = express.Router()
+const multer = require('multer')
+const path = require('path')
+const fs = require('fs-extra')
+require('../config/index')
 const {
   createSSHConnection,
   uploadFile,
   executeCommand,
   uploadFileViaSCP,
-} = require("../utils/sshClient");
+} = require('../utils/sshClient')
 
 // 配置文件上传
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    const uploadDir = path.join(__dirname, "../uploads");
-    fs.ensureDirSync(uploadDir);
-    cb(null, uploadDir);
+    const uploadDir = path.join(__dirname, '../uploads')
+    fs.ensureDirSync(uploadDir)
+    cb(null, uploadDir)
   },
   filename: (req, file, cb) => {
-    cb(null, `${Date.now()}-${file.originalname}`);
+    cb(null, `${Date.now()}-${file.originalname}`)
   },
-});
+})
 
-const upload = multer({ storage });
+const upload = multer({ storage })
 
 /**
  * @swagger
@@ -115,82 +115,79 @@ const upload = multer({ storage });
  *               type: string
  *               example: 权限被拒绝。请确保用户有权限写入目录
  */
-router.post("/files/upload-to-vm", upload.single("file"), async (req, res) => {
+router.post('/files/upload-to-vm', upload.single('file'), async (req, res) => {
   if (!req.file) {
-    return res.status(400).json({ error: "没有文件被上传" });
+    return res.status(400).json({ error: '没有文件被上传' })
   }
 
-  const localFilePath = req.file.path;
+  const localFilePath = req.file.path
   const remoteFilePath = req.body.remotePath
     ? `${req.body.remotePath}/${req.file.originalname}`
-    : `/home/${process.env.VM_USER}/${req.file.originalname}`;
+    : `/home/${process.env.VM_USER}/${req.file.originalname}`
 
-  let conn;
+  let conn
   const sshConfig = {
     host: req.body.host || process.env.VM_HOST,
-    port: parseInt(req.body.port || process.env.VM_PORT || "22"),
+    port: parseInt(req.body.port || process.env.VM_PORT || '22'),
     username: req.body.username || process.env.VM_USER,
     password: req.body.password || process.env.VM_PASSWORD,
     // 如果使用密钥认证，取消下面的注释
     // privateKey: fs.readFileSync(process.env.SSH_PRIVATE_KEY_PATH)
-  };
+  }
   try {
     // 从环境变量或请求中获取SSH连接信息
 
     // 建立SSH连接
-    conn = await createSSHConnection(sshConfig);
-    console.log("localFilePath:", localFilePath);
-    console.log("remoteFilePath:", remoteFilePath);
+    conn = await createSSHConnection(sshConfig)
+    console.log('localFilePath:', localFilePath)
+    console.log('remoteFilePath:', remoteFilePath)
 
     // 上传文件
-    await uploadFile(conn, localFilePath, remoteFilePath);
+    await uploadFile(conn, localFilePath, remoteFilePath)
 
     // 如果需要，执行额外的命令（例如设置权限）
     if (req.body.executeCommand) {
-      const { stdout, stderr } = await executeCommand(
-        conn,
-        req.body.executeCommand
-      );
-      console.log("命令执行结果:", stdout);
-      if (stderr) console.error("命令错误输出:", stderr);
+      const { stdout, stderr } = await executeCommand(conn, req.body.executeCommand)
+      console.log('命令执行结果:', stdout)
+      if (stderr) console.error('命令错误输出:', stderr)
     }
 
     // 成功响应
     res.status(200).json({
-      message: "文件成功上传到虚拟机",
+      message: '文件成功上传到虚拟机',
       localPath: localFilePath,
       remotePath: remoteFilePath,
-    });
+    })
   } catch (error) {
-    console.log("文件上传失败:", error);
+    console.log('文件上传失败:', error)
     // 提供更详细的错误信息
     // 在uploadFile失败后尝试SCP方式
     try {
-      console.log("SFTP上传失败，尝试使用SCP方式...");
-      await uploadFileViaSCP(conn, localFilePath, remoteFilePath);
-      console.log("SCP上传成功");
+      console.log('SFTP上传失败，尝试使用SCP方式...')
+      await uploadFileViaSCP(conn, localFilePath, remoteFilePath)
+      console.log('SCP上传成功')
     } catch (scpError) {
-      console.error("SCP上传也失败:", scpError);
+      console.error('SCP上传也失败:', scpError)
       // throw error; // 抛出原始SFTP错误
       res.status(500).json({
-        error: "文件上传失败",
+        error: '文件上传失败',
         details: error.message,
-      });
+      })
     }
   } finally {
     // 关闭连接
-    if (conn) conn.end();
+    if (conn) conn.end()
 
     // 可选：清理上传的临时文件
     if (req.body.cleanupLocal) {
       try {
-        await fs.remove(localFilePath);
-        console.log("本地临时文件已删除");
+        await fs.remove(localFilePath)
+        console.log('本地临时文件已删除')
       } catch (err) {
-        console.error("删除本地文件失败:", err);
+        console.error('删除本地文件失败:', err)
       }
     }
   }
-});
+})
 
-module.exports = router;
+module.exports = router

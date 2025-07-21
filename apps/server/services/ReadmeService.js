@@ -1,6 +1,6 @@
 // services/ReadmeService.js
-const fs = require('fs').promises;
-const path = require('path');
+const fs = require('fs').promises
+const path = require('path')
 
 /**
  * @class ReadmeService
@@ -12,9 +12,9 @@ class ReadmeService {
    * @param {string} [rootDir=process.cwd()] - 项目根目录路径
    */
   constructor(rootDir = process.cwd()) {
-    this.rootDir = rootDir;
-    this.mainReadmePath = path.join(this.rootDir, 'README.md');
-    this.frontendReadmePath = path.join(this.rootDir, 'front-end', 'README.md');
+    this.rootDir = rootDir
+    this.mainReadmePath = path.join(this.rootDir, 'README.md')
+    this.frontendReadmePath = path.join(this.rootDir, 'front-end', 'README.md')
   }
 
   /**
@@ -25,11 +25,11 @@ class ReadmeService {
    */
   async _readReadmeFile(filePath) {
     try {
-      const content = await fs.readFile(filePath, 'utf8');
-      return content;
+      const content = await fs.readFile(filePath, 'utf8')
+      return content
     } catch (error) {
-      console.error(`Error reading file ${filePath}:`, error);
-      return `无法读取文件 ${filePath}: ${error.message}`;
+      console.error(`Error reading file ${filePath}:`, error)
+      return `无法读取文件 ${filePath}: ${error.message}`
     }
   }
 
@@ -41,16 +41,16 @@ class ReadmeService {
     try {
       const [mainReadme, frontendReadme] = await Promise.all([
         this._readReadmeFile(this.mainReadmePath),
-        this._readReadmeFile(this.frontendReadmePath)
-      ]);
-      
+        this._readReadmeFile(this.frontendReadmePath),
+      ])
+
       return {
         mainReadme,
-        frontendReadme
-      };
+        frontendReadme,
+      }
     } catch (error) {
-      console.error('Error getting README contents:', error);
-      throw error;
+      console.error('Error getting README contents:', error)
+      throw error
     }
   }
 
@@ -59,7 +59,7 @@ class ReadmeService {
    * @returns {Promise<string>} - 主项目README内容
    */
   async getMainReadme() {
-    return this._readReadmeFile(this.mainReadmePath);
+    return this._readReadmeFile(this.mainReadmePath)
   }
 
   /**
@@ -67,8 +67,8 @@ class ReadmeService {
    * @returns {Promise<string>} - 前端项目README内容
    */
   async getFrontendReadme() {
-    return this._readReadmeFile(this.frontendReadmePath);
+    return this._readReadmeFile(this.frontendReadmePath)
   }
 }
 
-module.exports = ReadmeService;
+module.exports = ReadmeService

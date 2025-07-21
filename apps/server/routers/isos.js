@@ -34,6 +34,6 @@ const IsoController = require('../controllers/IsoController')
  *                       lastModified:
  *                         type: string
  */
-router.get('/isos', IsoController.getIsos)
+router.get('/', IsoController.getIsos)
 
 module.exports = router

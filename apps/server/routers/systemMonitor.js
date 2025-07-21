@@ -32,6 +32,6 @@ const SystemMonitorController = require('../controllers/systemMonitorController'
  *                 qemu:
  *                   type: object
  */
-router.get('/systemMonitor/info', SystemMonitorController.getSystemMonitorInfo)
+router.get('/info', SystemMonitorController.getSystemMonitorInfo)
 
 module.exports = router

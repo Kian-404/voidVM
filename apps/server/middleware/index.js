@@ -1,29 +1,63 @@
-const corsHandler = require('./cors')
-const { accessLogger, errorLogger, devLogger } = require('./logger')
-const { generalLimiter, strictLimiter, apiLimiter } = require('./rateLimiter')
-const { errorHandler } = require('./errorHandler')
-const { helmetConfig, preventParamPollution, ipFilter, userAgentCheck } = require('./security')
+// 导入所有中间件模块
+const cors = require('./cors')
+const error = require('./error')
+const logger = require('./logger')
+const rateLimiter = require('./rateLimiter')
+const security = require('./security')
+
+// 常用中间件组合
+const commonMiddlewares = [
+  cors.customCors(),
+  security.hideServerInfo,
+  // security.basicSecurity,
+  logger.requestLogger,
+  // rateLimiter.basicLimiter,
+  // security.xssProtection,
+  security.sqlInjectionProtection,
+]
+
+// API 中间件组合
+const apiMiddlewares = [
+  security.hideServerInfo,
+  cors.customCors({
+    origin: process.env.ALLOWED_ORIGINS?.split(',') || ['http://localhost:3000'],
+  }),
+  logger.requestLogger,
+  rateLimiter.apiLimiter,
+  security.xssProtection,
+]
+
+// 管理员中间件组合
+const adminMiddlewares = [...apiMiddlewares]
 
 module.exports = {
-  // CORS
-  corsHandler,
+  // 按模块导出
+  cors,
+  error,
+  logger,
+  rateLimiter,
+  security,
 
-  // 日志
-  accessLogger,
-  errorLogger,
-  devLogger,
+  // 组合中间件
+  commonMiddlewares,
+  apiMiddlewares,
+  adminMiddlewares,
 
-  // 限流
-  generalLimiter,
-  strictLimiter,
-  apiLimiter,
+  // 快捷使用函数
+  setupCommonMiddlewares: app => {
+    commonMiddlewares.forEach(middleware => {
+      app.use(middleware)
+    })
 
-  // 错误处理
-  errorHandler,
+    // 错误处理中间件需要放在最后
+    // app.use(error.notFound)
+    app.use(logger.errorLogger)
+    app.use(error.errorHandler)
+  },
 
-  // 安全
-  helmetConfig,
-  preventParamPollution,
-  ipFilter,
-  userAgentCheck,
+  setupApiMiddlewares: router => {
+    apiMiddlewares.forEach(middleware => {
+      router.use(middleware)
+    })
+  },
 }

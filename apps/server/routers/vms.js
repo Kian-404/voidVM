@@ -1,14 +1,7 @@
 // routes/vms.js
-const express = require('express');
-const router = express.Router();
-const QemuManager = require("../qemu-manager");
-const path = require("path");
-// API 路由
-// 创建 QEMU 管理器实例
-const qemuManager = new QemuManager({
-  vmStoragePath: path.join(__dirname, "../vm-storage"),
-});
-
+const express = require('express')
+const vmsController = require('../controllers/vmsController')
+const router = express.Router()
 
 /**
  * @swagger
@@ -28,39 +21,7 @@ const qemuManager = new QemuManager({
  *       400:
  *         description: 无效的请求参数
  */
-router.post("/vms", async (req, res) => {
-  try {
-    const {
-      vmName,
-      diskSize,
-      memory,
-      cpuCores,
-      isoPath,
-      vncPort,
-      networkType,
-      portForwarding,
-    } = req.body;
-    const newVM = await qemuManager.createCompleteVM({
-      vmName: vmName,
-      diskSize: diskSize || "20G",
-      memory: memory || 2048,
-      cpuCores: cpuCores || 2,
-      vncPort: vncPort || 0,
-      networkType: networkType || "user",
-      portForwarding: portForwarding || [
-        { hostPort: 2222, guestPort: 22 },
-        { hostPort: 8080, guestPort: 80 },
-      ],
-      isoPath: isoPath || "",
-      bootOrder: "d",
-      startAfterCreation: false,
-    });
-    res.status(201).json(newVM);
-    console.log("VM created successfully:", newVM);
-  } catch (error) {
-    console.error("Failed to create VM:", error);
-  }
-});
+router.post('/vms', vmsController.createVM)
 
 /**
  * @swagger
@@ -83,10 +44,7 @@ router.post("/vms", async (req, res) => {
  *                   items:
  *                     $ref: '#/components/schemas/VM'
  */
-router.get("/vms", async (req, res) => {
-  const vmsList = await qemuManager.listAllVMs();
-  res.json(vmsList);
-});
+router.get('/vms', vmsController.getAllVMs)
 
 /**
  * @swagger
@@ -109,42 +67,7 @@ router.get("/vms", async (req, res) => {
  *       400:
  *         description: 虚拟机已在运行或启动失败
  */
-router.post("/vms/:name/start", async (req, res) => {
-  try {
-    const {
-      name,
-      diskSize,
-      memory,
-      cpuCores,
-      isoPath,
-      vncPort,
-      networkType,
-      portForwarding,
-      diskPath,
-    } = req.body.config;
-    console.log("req.body", req.body);
-
-    const result = await qemuManager.startVM({
-      vmName: name,
-      diskSize: diskSize || "20G",
-      diskPath: diskPath || "",
-      isoPath: isoPath || "",
-      memory: memory || 2048,
-      cpuCores: cpuCores || 2,
-      vncPort: vncPort || 0,
-      networkType: networkType || "user",
-      portForwarding: portForwarding || [
-        { hostPort: 2222, guestPort: 22 },
-        { hostPort: 8080, guestPort: 80 },
-      ],
-      isoPath: isoPath || "",
-      bootOrder: "d",
-    });
-    res.json(result);
-  } catch (error) {
-    res.status(404).json({ error: error.message });
-  }
-});
+router.post('/vms/:name/start', vmsController.startVM)
 
 /**
  * @swagger
@@ -167,17 +90,7 @@ router.post("/vms/:name/start", async (req, res) => {
  *       400:
  *         description: 虚拟机未运行或停止失败
  */
-router.post("/vms/:name/stop", async (req, res) => {
-  try {
-    const { lastPid } = req.body.metadata;
-    const name = req.params.name;
-    console.log("name", name);
-    const result = await qemuManager.stopVM(name, lastPid);
-    res.json(result);
-  } catch (error) {
-    res.status(404).json({ error: error.message });
-  }
-});
+router.post('/vms/:name/stop', vmsController.stopVM)
 /**
  * @swagger
  * /api/vms/{name}/restart:
@@ -261,17 +174,7 @@ router.post("/vms/:name/stop", async (req, res) => {
  *                   type: string
  *                   example: 重启虚拟机时发生内部错误
  */
-router.post("/vms/:name/restart", async (req, res) => {
-  try {
-    const { lastPid } = req.body.metadata;
-    const name = req.params.name;
-    console.log("name", name);
-    const result = await qemuManager.restartVM(req.params.name, lastPid);
-    res.json(result);
-  } catch (error) {
-    res.status(404).json({ error: error.message });
-  }
-});
+router.post('/vms/:name/restart', vmsController.restartVM)
 /**
  * @swagger
  * /api/vms/{name}:
@@ -355,27 +258,9 @@ router.post("/vms/:name/restart", async (req, res) => {
  *                   type: string
  *                   example: 重启虚拟机时发生内部错误
  */
-router.delete("/vms/:name", (req, res) => {
-  try {
-    const result = qemuManager.deleteVM(req.params.name, true);
-    res.json(result);
-  } catch (error) {
-    res.status(404).json({ error: error.message });
-  }
-});
+router.delete('/vms/:name', vmsController.deleteVM)
 // vnc
-router.post("/novnc", async (req, res) => {
-  try {
-    const { vncPort, webPort } = req.body;
-    console.log("vncPort", vncPort);
-    console.log("webPort", webPort);
-    // const novnc = await qemuManager.startNoVNC(vncPort, webPort);
-    const novnc = await qemuManager.startNoVNC(vncPort, webPort);
-    res.json(novnc);
-  } catch (error) {
-    res.status(400).json({ error: error.message });
-  }
-});
+router.post('/novnc', vmsController.startNoVNC)
 /**
  * @swagger
  * /api/novnc/{name}:
@@ -459,16 +344,7 @@ router.post("/novnc", async (req, res) => {
  *                   type: string
  *                   example: 内部服务器错误
  */
-router.post("/novnc/:name", async (req, res) => {
-  try {
-    const { vncPort, webPort } = req.body;
-    // const novnc = await qemuManager.startNoVNC(vncPort, webPort);
-    const novnc = await qemuManager.startNoVNC(vncPort, webPort);
-    res.json(novnc);
-  } catch (error) {
-    res.status(400).json({ error: error.message });
-  }
-});
+router.post('/novnc/:name', vmsController.startNoVNCForVM)
 
 /**
  * @swagger
@@ -584,40 +460,7 @@ router.post("/novnc/:name", async (req, res) => {
  *                   type: string
  *                   example: 更新配置时发生内部错误
  */
-router.put("/vms/:name/config", async (req, res) => {
-  try {
-    const vmName = req.params.name;
-    const newConfig = req.body;
-
-    // 获取VM信息
-    const vmInfo = await qemuManager.getVMInfo(vmName);
-
-    if (!vmInfo) {
-      return res.status(404).json({ error: `找不到虚拟机 ${vmName}` });
-    }
-
-    // 更新配置
-    const updatedConfig = {
-      ...vmInfo.config,
-      ...newConfig,
-    };
-
-    // 保存更新后的配置
-    await qemuManager.updateVMConfig(vmName, updatedConfig);
-
-    // 如果VM正在运行，可能需要提醒用户某些更改需要重启才能生效
-    const isRunning = vmInfo.status === "running";
-
-    res.json({
-      success: true,
-      message: `虚拟机 ${vmName} 配置已更新`,
-      requiresRestart: isRunning,
-      config: updatedConfig,
-    });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
+router.put('/vms/:name/config', vmsController.updateVMConfig)
 
 /**
  * @swagger
@@ -707,63 +550,6 @@ router.put("/vms/:name/config", async (req, res) => {
  *                 error:
  *                   type: string
  */
-router.post("/vms/:name/toggleMountIso", async (req, res) => {
-  try {
-    const vmName = req.params.name;
-    const { mountStatus } = req.body;
+router.post('/vms/:name/toggleMountIso', vmsController.toggleMountIso)
 
-    if (!vmName) {
-      return res.status(400).json({
-        success: false,
-        error: "VM name is required",
-      });
-    }
-
-    console.log(`Received request to unmount ISO for VM: ${vmName}`);
-
-    // 检查虚拟机是否存在
-    const vmExists = await qemuManager.checkVMExists(vmName);
-    if (!vmExists) {
-      return res.status(404).json({
-        success: false,
-        error: `VM '${vmName}' not found`,
-      });
-    }
-
-    // 检查虚拟机是否正在运行
-    const isRunning = qemuManager.isVMRunning(vmName);
-
-    // 如果虚拟机没有运行，返回错误
-    if (!isRunning) {
-      return res.status(400).json({
-        success: false,
-        error: `VM '${vmName}' is not running. Cannot unmount ISO from a stopped VM.`,
-      });
-    }
-
-    // 调用 toggleMountIso 方法
-    const result = await qemuManager.toggleMountIso(vmName, mountStatus);
-
-    // 返回成功响应
-    return res.json({
-      success: true,
-      message: `ISO successfully unmounted from VM '${vmName}'`,
-      vm: {
-        name: vmName,
-        isMountIso: mountStatus,
-        ...result,
-      },
-    });
-  } catch (error) {
-    console.error(`Error unmounting ISO: ${error.message}`);
-    console.error(error.stack);
-
-    // 返回错误响应
-    return res.json({
-      success: false,
-      error: `Failed to unmount ISO: ${error.message}`,
-    });
-  }
-});
-
-module.exports = router;
+module.exports = router

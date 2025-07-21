@@ -2,43 +2,19 @@ const express = require('express')
 const http = require('http')
 const path = require('path')
 const bodyParser = require('body-parser')
-const cors = require('cors')
 const QemuManager = require('./qemu-manager')
-const {
-  corsHandler,
-  devLogger,
-  helmetConfig,
-  preventParamPollution,
-  generalLimiter,
-  errorHandler,
-} = require('./middleware')
-
-const app = express()
-
-// 基础中间件
-app.use(helmetConfig)
-app.use(corsHandler)
-app.use(express.json({ limit: '10mb' }))
-app.use(express.urlencoded({ extended: true }))
-app.use(preventParamPollution)
-// 日志中间件
-if (process.env.NODE_ENV === 'development') {
-  app.use(devLogger)
-}
-
-// 限流中间件
-app.use(generalLimiter)
-
+const { setupCommonMiddlewares } = require('./middleware/index.js')
+const cors = require('cors')
+require('./config/index')
 const qemuManager = new QemuManager({
   vmStoragePath: path.join(__dirname, './vm-storage'),
 })
 
-// swagger
-const swaggerUi = require('swagger-ui-express')
-const swaggerSpec = require('./swagger.js')
-
 const setupWebSockets = require('./services/webSocketService.js')
 
+const app = express()
+// app.use(cors())
+setupCommonMiddlewares(app)
 const server = http.createServer(app)
 // const wss = new WebSocket.Server({ server });
 const port = process.env.PORT || 3000
@@ -46,17 +22,20 @@ const port = process.env.PORT || 3000
 // 中间件
 app.use(bodyParser.json())
 app.use(express.static('public'))
+if (process.env.NODE_ENV === 'development') {
+  // swagger
+  const swaggerUi = require('swagger-ui-express')
+  const swaggerSpec = require('./swagger.js')
+  // 设置 Swagger UI
+  app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec))
 
-// 设置 Swagger UI
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec))
+  // 提供 swagger.json 端点
+  app.get('/swagger.json', (req, res) => {
+    res.setHeader('Content-Type', 'application/json')
+    res.send(swaggerSpec)
+  })
+}
 
-// 提供 swagger.json 端点
-app.get('/swagger.json', (req, res) => {
-  res.setHeader('Content-Type', 'application/json')
-  res.send(swaggerSpec)
-})
-
-app.use(errorHandler)
 // websocket
 setupWebSockets(server)
 

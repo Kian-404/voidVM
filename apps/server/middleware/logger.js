@@ -1,42 +1,78 @@
-const morgan = require('morgan')
 const fs = require('fs')
 const path = require('path')
 
-// 创建日志目录
+// 确保日志目录存在
 const logDir = path.join(__dirname, '../logs')
 if (!fs.existsSync(logDir)) {
   fs.mkdirSync(logDir, { recursive: true })
 }
 
-// 自定义日志格式
-morgan.format(
-  'custom',
-  ':remote-addr - :remote-user [:date[clf]] ":method :url HTTP/:http-version" :status :res[content-length] ":referrer" ":user-agent" :response-time ms'
-)
+// 请求日志中间件
+const requestLogger = (req, res, next) => {
+  const start = Date.now()
 
-// 访问日志流
-const accessLogStream = fs.createWriteStream(path.join(logDir, 'access.log'), { flags: 'a' })
+  // 保存原始的 res.end 方法
+  const originalEnd = res.end
 
-// 错误日志流
-const errorLogStream = fs.createWriteStream(path.join(logDir, 'error.log'), { flags: 'a' })
+  res.end = function (...args) {
+    const duration = Date.now() - start
+    const logData = {
+      timestamp: new Date().toISOString(),
+      method: req.method,
+      url: req.originalUrl,
+      ip: req.ip || req.connection.remoteAddress,
+      userAgent: req.get('User-Agent'),
+      statusCode: res.statusCode,
+      duration: `${duration}ms`,
+      body: req.method !== 'GET' ? req.body : undefined,
+    }
 
-// 访问日志中间件
-const accessLogger = morgan('custom', {
-  stream: accessLogStream,
-  skip: (req, res) => res.statusCode >= 400,
-})
+    // 写入日志文件
+    const logString = JSON.stringify(logData) + '\n'
+    const logFile = path.join(logDir, `access-${new Date().toISOString().split('T')[0]}.log`)
+
+    fs.appendFile(logFile, logString, err => {
+      if (err) console.error('日志写入失败:', err)
+    })
+
+    // 控制台输出
+    console.log(`${logData.method} ${logData.url} ${logData.statusCode} - ${logData.duration}`)
+
+    // 调用原始的 end 方法
+    originalEnd.apply(this, args)
+  }
+
+  next()
+}
 
 // 错误日志中间件
-const errorLogger = morgan('custom', {
-  stream: errorLogStream,
-  skip: (req, res) => res.statusCode < 400,
-})
+const errorLogger = (err, req, res, next) => {
+  const errorData = {
+    timestamp: new Date().toISOString(),
+    method: req.method,
+    url: req.originalUrl,
+    ip: req.ip,
+    error: {
+      message: err.message,
+      stack: err.stack,
+      status: err.status || 500,
+    },
+    body: req.body,
+    params: req.params,
+    query: req.query,
+  }
 
-// 开发环境日志
-const devLogger = morgan('dev')
+  const logString = JSON.stringify(errorData) + '\n'
+  const logFile = path.join(logDir, `error-${new Date().toISOString().split('T')[0]}.log`)
+
+  fs.appendFile(logFile, logString, writeErr => {
+    if (writeErr) console.error('错误日志写入失败:', writeErr)
+  })
+
+  next(err)
+}
 
 module.exports = {
-  accessLogger,
+  requestLogger,
   errorLogger,
-  devLogger,
 }

@@ -2,6 +2,7 @@ const { spawn, exec } = require('child_process')
 const fs = require('fs')
 const path = require('path')
 const util = require('util')
+const NetworkService = require('./services/networkService')
 
 const execPromise = util.promisify(exec)
 const fsPromise = {
@@ -17,6 +18,7 @@ const fsPromise = {
 
 class QemuManager {
   constructor(options = {}) {
+    this.networkService = new NetworkService()
     this.vmStoragePath = options.vmStoragePath || path.join(__dirname, 'vms')
     this.processes = new Map()
     this.init()
@@ -59,6 +61,7 @@ class QemuManager {
       diskSize: config.diskSize || '20G',
       diskFormat: config.diskFormat || 'qcow2',
       vncPort: config.vncPort || 0,
+      network: config.network,
       networkType: config.networkType || 'user',
       portForwarding: config.portForwarding || [],
       isoPath: config.isoPath || null,
@@ -160,15 +163,15 @@ class QemuManager {
       }
 
       // 检查VM是否正在运行
-      const isRunning = this.processes.has(vmName)
-      const status = isRunning ? 'running' : metadata?.status || 'unknown'
+      // const isRunning = this.processes.has(vmName)
+      const status = metadata?.status === 'running' ? 'running' : metadata?.status || 'unknown'
 
       return {
         name: vmName,
         config,
         metadata,
         status,
-        isRunning,
+        // isRunning,
         vmDir,
       }
     } catch (error) {
@@ -216,6 +219,94 @@ class QemuManager {
     const runningVMs = this.processes.values()
     return Array.from(runningVMs)
   }
+
+  // 构建网络参数
+  async buildNetworkArgs(netConfig, index) {
+    const netId = `net${index}`
+    const args = []
+
+    switch (netConfig.type) {
+      case 'user':
+        args.push('-netdev', this.buildUserNetdev(netConfig, netId))
+        break
+
+      case 'bridge':
+        args.push('-netdev', await this.buildBridgeNetdev(netConfig, netId))
+        break
+
+      case 'tap':
+        args.push('-netdev', await this.buildTapNetdev(netConfig, netId))
+        break
+    }
+
+    // 添加网卡设备
+    const deviceArgs = `e1000,netdev=${netId}`
+    if (netConfig.mac) {
+      args.push('-device', `${deviceArgs},mac=${netConfig.mac}`)
+    } else {
+      args.push('-device', deviceArgs)
+    }
+
+    return args
+  }
+
+  // 用户模式网络
+  buildUserNetdev(config, netId) {
+    let netdev = `user,id=${netId}`
+
+    if (config.hostfwd) {
+      config.hostfwd.forEach(({ protocol, hostPort, guestPort }) => {
+        netdev += `,hostfwd=${protocol}::${hostPort}-:${guestPort}`
+      })
+    }
+
+    return netdev
+  }
+
+  // 桥接网络
+  async buildBridgeNetdev(config, netId) {
+    const tapName = config.tap || `tap-${netId}-${Date.now()}`
+
+    // 创建 TAP 接口
+    await this.networkService.createTapInterface(tapName, config.bridge)
+
+    return `tap,id=${netId},ifname=${tapName},script=no,downscript=no`
+  }
+  // TAP 网络
+  async buildTapNetdev(config, netId) {
+    const tapName = config.ifname || `tap-${netId}-${Date.now()}`
+
+    if (config.bridge) {
+      await this.networkService.createTapInterface(tapName, config.bridge)
+    }
+
+    let netdev = `tap,id=${netId},ifname=${tapName}`
+
+    if (config.script) {
+      netdev += `,script=${config.script}`
+    } else {
+      netdev += ',script=no'
+    }
+
+    if (config.downscript) {
+      netdev += `,downscript=${config.downscript}`
+    } else {
+      netdev += ',downscript=no'
+    }
+
+    return netdev
+  }
+  generatePortFromVMName(vmName, basePort = 55555) {
+    let hash = 0
+    for (let i = 0; i < vmName.length; i++) {
+      const char = vmName.charCodeAt(i)
+      hash = (hash << 5) - hash + char
+      hash = hash & hash // 转换为32位整数
+    }
+    // 确保端口在有效范围内
+    const port = basePort + Math.abs(hash % 1000)
+    return port
+  }
   async startVM(options) {
     const {
       vmName,
@@ -224,10 +315,11 @@ class QemuManager {
       diskPath,
       isoPath,
       vncPort,
-      networkType,
+      networkType, // 'user' | 'bridge' | 'tap'
+      network = [],
       portForwarding,
-      monitorPort = 55555,
     } = options
+    const monitorPort = this.generatePortFromVMName(vmName)
 
     if (!vmName) {
       throw new Error('VM name is required')
@@ -236,7 +328,10 @@ class QemuManager {
     if (!diskPath) {
       throw new Error('Disk path is required')
     }
-
+    console.log('processes')
+    for (let key of this.processes.keys()) {
+      console.log(key) // "F"  "T"
+    }
     // 检查VM是否已经在运行
     if (this.processes.has(vmName)) {
       throw new Error(`VM ${vmName} is already running`)
@@ -282,9 +377,9 @@ class QemuManager {
       '-drive',
       `file=${diskPath},format=qcow2`,
       '-vnc',
-      `:${vncPort - 5900 || 0}`,
-      // "-monitor",
-      // `tcp:127.0.0.1:${monitorPort},server,nowait`,
+      `:${vncPort || 0}`,
+      '-monitor',
+      `tcp:127.0.0.1:${monitorPort},server,nowait,telnet `,
       '-daemonize',
     ]
 
@@ -313,24 +408,31 @@ class QemuManager {
     }
 
     // 配置网络
-    let netdevArgs = `id=net0`
-
-    if (networkType === 'user') {
-      netdevArgs += ',type=user'
-
-      // 添加端口转发
-      if (portForwarding && portForwarding.length > 0) {
-        portForwarding.forEach(({ hostPort, guestPort, protocol = 'tcp' }) => {
-          netdevArgs += `,hostfwd=${protocol}::${hostPort}-:${guestPort}`
-        })
-      }
-
-      qemuArgs.push('-netdev', netdevArgs)
-      qemuArgs.push('-device', 'virtio-net-pci,netdev=net0')
-    } else if (networkType === 'bridge') {
-      qemuArgs.push('-netdev', `bridge,id=net0,br=br0`)
-      qemuArgs.push('-device', 'virtio-net-pci,netdev=net0')
+    for (let i = 0; i < network.length; i++) {
+      const netConfig = network[i]
+      const netArgs = await this.buildNetworkArgs(netConfig, i)
+      qemuArgs.push(...netArgs)
     }
+    console.log('qemuArgs', qemuArgs)
+    // // 配置网络
+    // let netdevArgs = `id=net0`
+
+    // if (networkType === 'user') {
+    //   netdevArgs += ',type=user'
+
+    //   // 添加端口转发
+    //   if (portForwarding && portForwarding.length > 0) {
+    //     portForwarding.forEach(({ hostPort, guestPort, protocol = 'tcp' }) => {
+    //       netdevArgs += `,hostfwd=${protocol}::${hostPort}-:${guestPort}`
+    //     })
+    //   }
+
+    //   qemuArgs.push('-netdev', netdevArgs)
+    //   qemuArgs.push('-device', 'virtio-net-pci,netdev=net0')
+    // } else if (networkType === 'bridge') {
+    //   qemuArgs.push('-netdev', `bridge,id=net0,br=br0`)
+    //   qemuArgs.push('-device', 'virtio-net-pci,netdev=net0')
+    // }
 
     // 启用 KVM 加速（如果可用）
     try {
@@ -386,7 +488,7 @@ class QemuManager {
         lastCommand: qemuCommand,
         lastRunTime: new Date().toISOString(),
         monitorPort,
-        vncPort: 5900 + (vncPort || 0),
+        vncPort: vncPort || 0,
         // 如果是首次启动且挂载了ISO，标记为安装中
         installing: shouldMountIso && !metadata.installed,
       }
@@ -398,7 +500,7 @@ class QemuManager {
       return {
         vmName,
         pid,
-        vncPort: 5900 + (vncPort || 0),
+        vncPort: vncPort || 0,
         monitorPort,
         status: 'running',
         isMountIso: shouldMountIso,
@@ -427,14 +529,18 @@ class QemuManager {
         status: 'stopped',
         lastRunTime: new Date().toISOString(),
       })
-      this.processes.delete(vmName)
+      this.processes.delete(vmName) // 从进程Map中删除
+      console.log('processes')
+      for (let key of this.processes.keys()) {
+        console.log(key) // "F"  "T"
+      }
       return { vmName, status: 'stopped' }
     } catch (e) {
       await this.updateVMMetadata(vmName, {
         status: 'stopped',
         lastRunTime: new Date().toISOString(),
       })
-      this.processes.delete(vmName)
+      this.processes.delete(vmName) // 从进程Map中删除
       return false
     }
   }
@@ -508,6 +614,7 @@ class QemuManager {
         cpuCores: config.cpuCores || 2,
         diskPath: config.diskPath,
         vncPort: config.vncPort || 0,
+        network: config.network || { type: 'user', name: 'default' },
       }
 
       // 添加可选配置
@@ -615,22 +722,27 @@ class QemuManager {
     if (!metadata) {
       throw new Error(`VM ${vmName} not found`)
     }
-
     // 更新虚拟机元数据，标记 ISO 已卸载
     const updatedMetadata = {
       isMountIso: mountStatus,
       isoUnmountTime: new Date().toISOString(),
       installed: true,
     }
-
+    if (mountStatus) {
+      updatedMetadata.isoMountTime = new Date().toISOString()
+    } else {
+      updatedMetadata.isoUnmountTime = new Date().toISOString()
+    }
     // 保存更新后的元数据
     await this.updateVMMetadata(vmName, updatedMetadata)
-    console.log(`ISO unmounted and configuration updated for VM: ${vmName}`)
+
+    console.log(`ISO mount status updated for VM: ${vmName}, isMountIso: ${mountStatus}`)
 
     return updatedMetadata
   }
 
-  async startNoVNC(vncPort = 5900, webPort = 6080) {
+  async startNoVNC(vncPort = 0, webPort = 6080) {
+    vncPort = parseInt(vncPort) + 5900 // 将VNC端口转换为Web端口
     try {
       // 获取服务器IP地址
       const serverIP = this.getServerIP()
@@ -638,7 +750,7 @@ class QemuManager {
 
       // 为每个VNC端口分配一个唯一的Web端口
       // 这样每个VNC连接都有自己的noVNC实例
-      const dedicatedWebPort = webPort + (vncPort - 5900)
+      const dedicatedWebPort = parseInt(webPort) + parseInt(vncPort) - 5900
 
       // 构建VNC链接URL
       const vncUrl = `http://${serverIP}:${dedicatedWebPort}/vnc.html?autoconnect=true&resize=scale&reconnect=1`
@@ -828,6 +940,7 @@ class QemuManager {
       diskFormat = 'qcow2',
       vncPort,
       networkType = 'user',
+      network,
       portForwarding = [],
       isoPath = null,
       bootOrder = 'c',
@@ -886,6 +999,7 @@ class QemuManager {
         cpuCores,
         vncPort,
         networkType,
+        network,
         portForwarding,
         isoPath,
         bootOrder,
@@ -904,6 +1018,7 @@ class QemuManager {
           isoPath,
           vncPort,
           networkType,
+          network,
           portForwarding,
         })
       }

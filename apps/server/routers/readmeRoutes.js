@@ -1,9 +1,9 @@
 // routes/readmeRoutes.js
-const express = require('express');
-const router = express.Router();
-const ReadmeService = require('../services/ReadmeService');
+const express = require('express')
+const router = express.Router()
+const ReadmeService = require('../services/ReadmeService')
 
-const readmeService = new ReadmeService();
+const readmeService = new ReadmeService()
 
 /**
  * @swagger
@@ -32,12 +32,12 @@ const readmeService = new ReadmeService();
  */
 router.get('/', async (req, res) => {
   try {
-    const readmeContents = await readmeService.getReadmeContents();
-    res.json(readmeContents);
+    const readmeContents = await readmeService.getReadmeContents()
+    res.json(readmeContents)
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: error.message })
   }
-});
+})
 
 /**
  * @swagger
@@ -63,12 +63,12 @@ router.get('/', async (req, res) => {
  */
 router.get('/main', async (req, res) => {
   try {
-    const content = await readmeService.getMainReadme();
-    res.json({ content });
+    const content = await readmeService.getMainReadme()
+    res.json({ content })
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: error.message })
   }
-});
+})
 
 /**
  * @swagger
@@ -94,11 +94,11 @@ router.get('/main', async (req, res) => {
  */
 router.get('/frontend', async (req, res) => {
   try {
-    const content = await readmeService.getFrontendReadme();
-    res.json({ content });
+    const content = await readmeService.getFrontendReadme()
+    res.json({ content })
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: error.message })
   }
-});
+})
 
-module.exports = router;
+module.exports = router

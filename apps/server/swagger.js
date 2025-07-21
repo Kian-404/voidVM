@@ -1,6 +1,7 @@
 // swagger.js
-const swaggerJsdoc = require('swagger-jsdoc');
-
+const swaggerJsdoc = require('swagger-jsdoc')
+require('./config/index')
+const POST = process.env.PORT || 3000
 const swaggerOptions = {
   definition: {
     openapi: '3.0.0',
@@ -16,14 +17,18 @@ const swaggerOptions = {
     },
     servers: [
       {
-        url: 'http://localhost:3000',
+        url: 'http://localhost:3000', // 开发环境
         description: '开发服务器',
+      },
+      {
+        url: 'http://10.64.60.185:3030', // 你的实际服务器地址
+        description: '生产服务器',
       },
     ],
   },
   // 指定包含 API 注释的文件路径
   apis: ['./routers/*.js', './swagger.js'], // 包含路由文件和当前文件
-};
+}
 
 // 在当前文件中定义通用的 Swagger 组件
 /**
@@ -60,7 +65,7 @@ const swaggerOptions = {
  *         isMountIso:
  *           type: boolean
  *           description: ISO 是否已挂载
- *   
+ *
  *   responses:
  *     NotFound:
  *       description: 资源未找到
@@ -75,7 +80,7 @@ const swaggerOptions = {
  *               error:
  *                 type: string
  *                 example: 资源未找到
- *     
+ *
  *     BadRequest:
  *       description: 无效的请求参数
  *       content:
@@ -98,6 +103,6 @@ const swaggerOptions = {
  *   description: 虚拟机管理 API
  */
 
-const swaggerSpec = swaggerJsdoc(swaggerOptions);
+const swaggerSpec = swaggerJsdoc(swaggerOptions)
 
-module.exports = swaggerSpec;
+module.exports = swaggerSpec
