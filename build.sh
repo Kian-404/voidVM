@@ -8,11 +8,11 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 # 设置变量
-BASE_IMAGE_NAME="viod-vm-base"
+BASE_IMAGE_NAME="vm-base"
 BASE_IMAGE_TAG="latest"
-APP_IMAGE_NAME="void-vm-app"
+APP_IMAGE_NAME="vm-app"
 APP_IMAGE_TAG="latest"
-CONTAINER_NAME="void-vm-container"
+CONTAINER_NAME="vm-container"
 
 # 函数：打印彩色信息
 print_info() {

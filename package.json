@@ -29,9 +29,9 @@
     "format:check": "prettier --check .",
     "format:web": "prettier --write apps/web/src",
     "format:server": "prettier --write apps/server/src",
-    "docs:dev": "pnpm --filter @void-vm/docs dev",
-    "docs:build": "vitepress build docs",
-    "docs:preview": "vitepress preview docs"
+    "dev:docs": "pnpm --filter @void-vm/docs dev",
+    "build:docs": "pnpm --filter @void-vm/docs build",
+    "preview:docs": "pnpm --filter @void-vm/docs preview"
   },
   "devDependencies": {
     "@commitlint/cli": "^19.8.1",
@@ -39,6 +39,7 @@
     "@types/node": "^24.0.0",
     "@typescript-eslint/eslint-plugin": "^8.34.0",
     "@typescript-eslint/parser": "^8.34.0",
+    "node": "^24.2.0",
     "eslint": "^9.28.0",
     "eslint-config-prettier": "^10.1.5",
     "eslint-plugin-prettier": "^5.4.1",

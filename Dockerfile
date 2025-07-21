@@ -1,9 +1,8 @@
 # 使用自定义基础镜像
-FROM viod-vm-base:latest
-
-RUN mkdir -p /app
+FROM vm-base:latest
 
 # 设置工作目录
+RUN mkdir -p /app
 WORKDIR /app
 
 # 阶段1: 构建前端
@@ -23,6 +22,7 @@ COPY apps/server ./server/
 RUN mkdir -p ./server/public
 RUN cp -r ./web/dist/* ./server/public/
 
+
 # 设置工作目录到server
 WORKDIR /app/server
 
@@ -30,8 +30,9 @@ WORKDIR /app/server
 ENV NODE_ENV=production
 
 # 暴露端口
-EXPOSE 3000
-
+EXPOSE 3030
+EXPOSE 6080
 # 启动应用
 CMD ["node", "server.js"]
+# CMD ["pm2-runtime", "start", "ecosystem.config.js"]
 
