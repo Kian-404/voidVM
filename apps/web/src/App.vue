@@ -25,3 +25,8 @@
     await authStore.initialize()
   })
 </script>
+<style scoped>
+  .app-container {
+    position: relative;
+  }
+</style>

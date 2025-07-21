@@ -1,3 +1,25 @@
 // Import all of Bootstrap’s CSS
-@import "bootstrap/scss/bootstrap";
-@import "bootstrap-icons/font/bootstrap-icons.css";
+@import 'bootstrap/scss/bootstrap';
+@import 'bootstrap-icons/font/bootstrap-icons.css';
+
+/* 在你的全局CSS文件中添加 */
+.modal {
+  z-index: 1055 !important;
+}
+
+.modal-backdrop {
+  z-index: 1050 !important;
+}
+
+.modal.show {
+  z-index: 1055 !important;
+}
+
+.modal-dialog {
+  z-index: 1056 !important;
+}
+
+.modal-content {
+  z-index: 1057 !important;
+  position: relative;
+}
