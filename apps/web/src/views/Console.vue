@@ -6,9 +6,7 @@
     <div v-if="!wsService.connected.value" class="alert alert-warning">
       <i class="bi bi-exclamation-triangle me-2"></i>
       正在连接到服务器...
-      <button @click="reconnect" class="btn btn-sm btn-outline-dark ms-2">
-        重新连接
-      </button>
+      <button @click="reconnect" class="btn btn-sm btn-outline-dark ms-2">重新连接</button>
     </div>
 
     <div v-if="wsService.error.value" class="alert alert-danger">
@@ -21,18 +19,22 @@
       <div class="col-md-3 mb-3">
         <div class="card h-100 border-0 shadow-sm">
           <div class="card-body">
-            <h5 class="card-title text-primary">
-              <i class="bi bi-cpu me-2"></i>CPU
-            </h5>
+            <h5 class="card-title text-primary"><i class="bi bi-cpu me-2"></i>CPU</h5>
             <div v-if="systemData">
               <div class="d-flex justify-content-between align-items-center mb-2">
                 <span>使用率</span>
                 <span class="fw-bold">{{ systemData.cpu.usage }}%</span>
               </div>
               <div class="progress mb-3" style="height: 10px">
-                <div class="progress-bar" role="progressbar" :style="`width: ${systemData.cpu.usage}%`"
-                  :class="getCpuBarClass(systemData.cpu.usage)" :aria-valuenow="systemData.cpu.usage" aria-valuemin="0"
-                  aria-valuemax="100"></div>
+                <div
+                  class="progress-bar"
+                  role="progressbar"
+                  :style="`width: ${systemData.cpu.usage}%`"
+                  :class="getCpuBarClass(systemData.cpu.usage)"
+                  :aria-valuenow="systemData.cpu.usage"
+                  aria-valuemin="0"
+                  aria-valuemax="100"
+                ></div>
               </div>
               <div class="small text-muted">
                 <div>{{ systemData.cpu.model }}</div>
@@ -51,18 +53,21 @@
       <div class="col-md-3 mb-3">
         <div class="card h-100 border-0 shadow-sm">
           <div class="card-body">
-            <h5 class="card-title text-success">
-              <i class="bi bi-memory me-2"></i>内存
-            </h5>
+            <h5 class="card-title text-success"><i class="bi bi-memory me-2"></i>内存</h5>
             <div v-if="systemData">
               <div class="d-flex justify-content-between align-items-center mb-2">
                 <span>使用率</span>
                 <span class="fw-bold">{{ systemData.memory.usagePercentage }}%</span>
               </div>
               <div class="progress mb-3" style="height: 10px">
-                <div class="progress-bar bg-success" role="progressbar"
+                <div
+                  class="progress-bar bg-success"
+                  role="progressbar"
                   :style="`width: ${systemData.memory.usagePercentage}%`"
-                  :aria-valuenow="systemData.memory.usagePercentage" aria-valuemin="0" aria-valuemax="100"></div>
+                  :aria-valuenow="systemData.memory.usagePercentage"
+                  aria-valuemin="0"
+                  aria-valuemax="100"
+                ></div>
               </div>
               <div class="small text-muted">
                 <div class="d-flex justify-content-between">
@@ -87,18 +92,21 @@
       <div class="col-md-3 mb-3">
         <div class="card h-100 border-0 shadow-sm">
           <div class="card-body">
-            <h5 class="card-title text-info">
-              <i class="bi bi-hdd me-2"></i>磁盘
-            </h5>
+            <h5 class="card-title text-info"><i class="bi bi-hdd me-2"></i>磁盘</h5>
             <div v-if="systemData">
               <div class="d-flex justify-content-between align-items-center mb-2">
                 <span>使用率</span>
                 <span class="fw-bold">{{ systemData.disk.usagePercentage }}%</span>
               </div>
               <div class="progress mb-3" style="height: 10px">
-                <div class="progress-bar bg-info" role="progressbar"
-                  :style="`width: ${systemData.disk.usagePercentage}%`" :aria-valuenow="systemData.disk.usagePercentage"
-                  aria-valuemin="0" aria-valuemax="100"></div>
+                <div
+                  class="progress-bar bg-info"
+                  role="progressbar"
+                  :style="`width: ${systemData.disk.usagePercentage}%`"
+                  :aria-valuenow="systemData.disk.usagePercentage"
+                  aria-valuemin="0"
+                  aria-valuemax="100"
+                ></div>
               </div>
               <div class="small text-muted">
                 <div class="d-flex justify-content-between">
@@ -123,19 +131,23 @@
       <div class="col-md-3 mb-3">
         <div class="card h-100 border-0 shadow-sm">
           <div class="card-body">
-            <h5 class="card-title text-warning">
-              <i class="bi bi-pc-display me-2"></i>虚拟机
-            </h5>
+            <h5 class="card-title text-warning"><i class="bi bi-pc-display me-2"></i>虚拟机</h5>
             <div v-if="systemData">
               <div class="d-flex justify-content-between align-items-center mb-2">
                 <span>运行中</span>
-                <span class="fw-bold">{{ systemData.qemu.runningVMs }} / {{ systemData.qemu.totalVMs }}</span>
+                <span class="fw-bold"
+                  >{{ systemData.qemu.runningVMs }} / {{ systemData.qemu.totalVMs }}</span
+                >
               </div>
               <div class="progress mb-3" style="height: 10px">
-                <div class="progress-bar bg-warning" role="progressbar"
-                  :style="`width: ${systemData.qemu.totalVMs ? (systemData.qemu.runningVMs / systemData.qemu.totalVMs * 100) : 0}%`"
-                  :aria-valuenow="systemData.qemu.runningVMs" aria-valuemin="0"
-                  :aria-valuemax="systemData.qemu.totalVMs"></div>
+                <div
+                  class="progress-bar bg-warning"
+                  role="progressbar"
+                  :style="`width: ${systemData.qemu.totalVMs ? (systemData.qemu.runningVMs / systemData.qemu.totalVMs) * 100 : 0}%`"
+                  :aria-valuenow="systemData.qemu.runningVMs"
+                  aria-valuemin="0"
+                  :aria-valuemax="systemData.qemu.totalVMs"
+                ></div>
               </div>
               <div class="small text-muted">
                 <div class="d-flex justify-content-between">
@@ -164,9 +176,7 @@
       <div class="col-md-6 mb-4">
         <div class="card border-0 shadow-sm">
           <div class="card-header bg-white">
-            <h5 class="card-title mb-0">
-              <i class="bi bi-info-circle me-2"></i>系统信息
-            </h5>
+            <h5 class="card-title mb-0"><i class="bi bi-info-circle me-2"></i>系统信息</h5>
           </div>
           <div class="card-body">
             <div v-if="systemData">
@@ -212,9 +222,7 @@
       <div class="col-md-6 mb-4">
         <div class="card border-0 shadow-sm">
           <div class="card-header bg-white">
-            <h5 class="card-title mb-0">
-              <i class="bi bi-diagram-3 me-2"></i>网络信息
-            </h5>
+            <h5 class="card-title mb-0"><i class="bi bi-diagram-3 me-2"></i>网络信息</h5>
           </div>
           <div class="card-body">
             <div v-if="systemData">
@@ -278,9 +286,7 @@
       <div class="col-md-6 mb-4">
         <div class="card border-0 shadow-sm">
           <div class="card-header bg-white">
-            <h5 class="card-title mb-0">
-              <i class="bi bi-pie-chart me-2"></i>资源分配
-            </h5>
+            <h5 class="card-title mb-0"><i class="bi bi-pie-chart me-2"></i>资源分配</h5>
           </div>
           <div class="card-body">
             <div v-if="systemData">
@@ -290,12 +296,18 @@
                   <span class="fw-bold">{{ calculateCpuAllocationPercentage() }}%</span>
                 </div>
                 <div class="progress mb-1" style="height: 10px">
-                  <div class="progress-bar bg-primary" role="progressbar"
+                  <div
+                    class="progress-bar bg-primary"
+                    role="progressbar"
                     :style="`width: ${calculateCpuAllocationPercentage()}%`"
-                    :aria-valuenow="calculateCpuAllocationPercentage()" aria-valuemin="0" aria-valuemax="100"></div>
+                    :aria-valuenow="calculateCpuAllocationPercentage()"
+                    aria-valuemin="0"
+                    aria-valuemax="100"
+                  ></div>
                 </div>
                 <div class="small text-muted">
-                  已分配 {{ systemData.qemu.cpuAllocation }} 核心，共 {{ systemData.cpu.cores }} 核心
+                  已分配 {{ systemData.qemu.cpuAllocation }} 核心，共
+                  {{ systemData.cpu.cores }} 核心
                 </div>
               </div>
 
@@ -305,25 +317,29 @@
                   <span class="fw-bold">{{ calculateMemoryAllocationPercentage() }}%</span>
                 </div>
                 <div class="progress mb-1" style="height: 10px">
-                  <div class="progress-bar bg-success" role="progressbar"
+                  <div
+                    class="progress-bar bg-success"
+                    role="progressbar"
                     :style="`width: ${calculateMemoryAllocationPercentage()}%`"
-                    :aria-valuenow="calculateMemoryAllocationPercentage()" aria-valuemin="0" aria-valuemax="100"></div>
+                    :aria-valuenow="calculateMemoryAllocationPercentage()"
+                    aria-valuemin="0"
+                    aria-valuemax="100"
+                  ></div>
                 </div>
                 <div class="small text-muted">
-                  已分配 {{ formatBytes(systemData.qemu.memoryAllocation * 1024 * 1024) }}，共 {{
-                    formatBytes(systemData.memory.total) }}
+                  已分配 {{ formatBytes(systemData.qemu.memoryAllocation * 1024 * 1024) }}，共
+                  {{ formatBytes(systemData.memory.total) }}
                 </div>
               </div>
 
               <div class="alert alert-info small mb-0">
                 <i class="bi bi-info-circle me-2"></i>
                 <span v-if="systemData.qemu.runningVMs > 0">
-                  当前有 {{ systemData.qemu.runningVMs }} 台虚拟机正在运行，占用了 {{ calculateCpuAllocationPercentage() }}% 的 CPU 资源和
+                  当前有 {{ systemData.qemu.runningVMs }} 台虚拟机正在运行，占用了
+                  {{ calculateCpuAllocationPercentage() }}% 的 CPU 资源和
                   {{ calculateMemoryAllocationPercentage() }}% 的内存资源。
                 </span>
-                <span v-else>
-                  当前没有运行中的虚拟机。系统资源空闲。
-                </span>
+                <span v-else> 当前没有运行中的虚拟机。系统资源空闲。 </span>
               </div>
             </div>
             <div v-else class="text-center py-4">
@@ -339,9 +355,7 @@
       <div class="col-md-6 mb-4">
         <div class="card border-0 shadow-sm">
           <div class="card-header bg-white">
-            <h5 class="card-title mb-0">
-              <i class="bi bi-hdd-stack me-2"></i>磁盘使用情况
-            </h5>
+            <h5 class="card-title mb-0"><i class="bi bi-hdd-stack me-2"></i>磁盘使用情况</h5>
           </div>
           <div class="card-body">
             <div v-if="systemData">
@@ -351,9 +365,15 @@
                   <span class="fw-bold">{{ systemData.disk.usagePercentage }}%</span>
                 </div>
                 <div class="progress mb-1" style="height: 15px">
-                  <div class="progress-bar" role="progressbar" :style="`width: ${systemData.disk.usagePercentage}%`"
+                  <div
+                    class="progress-bar"
+                    role="progressbar"
+                    :style="`width: ${systemData.disk.usagePercentage}%`"
                     :class="getDiskBarClass(systemData.disk.usagePercentage)"
-                    :aria-valuenow="systemData.disk.usagePercentage" aria-valuemin="0" aria-valuemax="100"></div>
+                    :aria-valuenow="systemData.disk.usagePercentage"
+                    aria-valuemin="0"
+                    aria-valuemax="100"
+                  ></div>
                 </div>
               </div>
 
@@ -385,94 +405,92 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue';
-import websocketService, { WebSocketService } from '../services/websocketService';
+  import { ref, computed, onMounted, onUnmounted } from 'vue'
+  import websocketService, { WebSocketService } from '../services/websocketService'
 
+  const wsService = websocketService
+  const systemData = computed(() => wsService.systemData.value)
 
-const wsService = websocketService;
-const systemData = computed(() => wsService.systemData.value);
+  // 在组件挂载时连接 WebSocket
+  onMounted(() => {
+    wsService.connect()
+  })
 
-// 在组件挂载时连接 WebSocket
-onMounted(() => {
-  wsService.connect();
-});
+  // 在组件卸载时断开 WebSocket
+  onUnmounted(() => {
+    wsService.disconnect()
+  })
 
-// 在组件卸载时断开 WebSocket
-onUnmounted(() => {
-  wsService.disconnect();
-});
+  // 重新连接 WebSocket
+  const reconnect = () => {
+    wsService.connect()
+  }
 
-// 重新连接 WebSocket
-const reconnect = () => {
-  wsService.connect();
-};
+  // 格式化字节数
+  const formatBytes = (bytes: number) => {
+    return WebSocketService.formatBytes(bytes)
+  }
 
-// 格式化字节数
-const formatBytes = (bytes: number) => {
-  return WebSocketService.formatBytes(bytes);
-};
+  // 格式化运行时间
+  const formatUptime = (seconds: number) => {
+    return WebSocketService.formatUptime(seconds)
+  }
 
-// 格式化运行时间
-const formatUptime = (seconds: number) => {
-  return WebSocketService.formatUptime(seconds);
-};
+  // 获取 CPU 使用率进度条的样式类
+  const getCpuBarClass = (usage: number) => {
+    if (usage < 60) return 'bg-success'
+    if (usage < 85) return 'bg-warning'
+    return 'bg-danger'
+  }
 
-// 获取 CPU 使用率进度条的样式类
-const getCpuBarClass = (usage: number) => {
-  if (usage < 60) return 'bg-success';
-  if (usage < 85) return 'bg-warning';
-  return 'bg-danger';
-};
+  // 获取磁盘使用率进度条的样式类
+  const getDiskBarClass = (usage: number) => {
+    if (usage < 70) return 'bg-info'
+    if (usage < 90) return 'bg-warning'
+    return 'bg-danger'
+  }
 
-// 获取磁盘使用率进度条的样式类
-const getDiskBarClass = (usage: number) => {
-  if (usage < 70) return 'bg-info';
-  if (usage < 90) return 'bg-warning';
-  return 'bg-danger';
-};
+  // 计算 CPU 分配百分比
+  const calculateCpuAllocationPercentage = () => {
+    if (!systemData.value) return 0
+    const { cpuAllocation } = systemData.value.qemu
+    const { cores } = systemData.value.cpu
+    return Math.min(Math.round((cpuAllocation / cores) * 100), 100)
+  }
 
-// 计算 CPU 分配百分比
-const calculateCpuAllocationPercentage = () => {
-  if (!systemData.value) return 0;
-  const { cpuAllocation } = systemData.value.qemu;
-  const { cores } = systemData.value.cpu;
-  return Math.min(Math.round((cpuAllocation / cores) * 100), 100);
-};
-
-// 计算内存分配百分比
-const calculateMemoryAllocationPercentage = () => {
-  if (!systemData.value) return 0;
-  const memoryAllocationBytes = systemData.value.qemu.memoryAllocation * 1024 * 1024;
-  const { total } = systemData.value.memory;
-  return Math.min(Math.round((memoryAllocationBytes / total) * 100), 100);
-};
-
+  // 计算内存分配百分比
+  const calculateMemoryAllocationPercentage = () => {
+    if (!systemData.value) return 0
+    const memoryAllocationBytes = systemData.value.qemu.memoryAllocation * 1024 * 1024
+    const { total } = systemData.value.memory
+    return Math.min(Math.round((memoryAllocationBytes / total) * 100), 100)
+  }
 </script>
 
 <style scoped>
-.card {
-  transition: box-shadow 0.3s ease;
-}
+  .card {
+    transition: box-shadow 0.3s ease;
+  }
 
-.card:hover {
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1) !important;
-}
+  .card:hover {
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1) !important;
+  }
 
-.progress {
-  border-radius: 0.5rem;
-  background-color: #f0f0f0;
-}
+  .progress {
+    border-radius: 0.5rem;
+    background-color: #f0f0f0;
+  }
 
-.progress-bar {
-  border-radius: 0.5rem;
-}
+  .progress-bar {
+    border-radius: 0.5rem;
+  }
 
-.table th {
-  font-weight: 600;
-  color: #555;
-}
+  .table th {
+    font-weight: 600;
+    color: #555;
+  }
 
-.badge {
-  padding: 0.25em 0.5em;
-}
+  .badge {
+    padding: 0.25em 0.5em;
+  }
 </style>
