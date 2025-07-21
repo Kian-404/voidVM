@@ -23,15 +23,15 @@ voidVM is a modern virtual machine management platform that provides an intuitiv
 - [x] Associate users with virtual machines (Supabase Auth and Virtual Machines)
 - [x] Virtual machine status monitoring (QMP)
 - [x] Virtual machine creation process optimization (Image management)
-- [x] Virtual machine image management (Image upload, delete, view)
-- [x] Virtual machine network management (Virtual network configuration)
+- [✅] Virtual machine image management (Image upload, delete, view)
+- [✅] Virtual machine network management (Virtual network configuration)
 - [x] Virtual machine document management (VM document upload, delete, view)
 - [x] Virtual machine storage management (VM storage configuration)
-- [x] Virtual machine snapshot management (VM snapshot creation, deletion, viewing)
+- [✅] Virtual machine snapshot management (VM snapshot creation, deletion, viewing)
 - [x] Backend JavaScript upgrade to TypeScript then upgrade to Bun
 - [x] Project testing addition (Using Vitest)
-- [x] Project deployment optimization (Using Docker)
-- [x] Project documentation optimization (Using VitePress)
+- [✅] Project deployment optimization (Using Docker)
+- [✅] Project documentation optimization (Using VitePress)
 - [x] Project code optimization (Using ESLint and Prettier)
 - [x] Project CI/CD optimization (Using GitHub Actions)
 - [x] Project performance optimization (Using Bun and Vitest)
@@ -119,20 +119,6 @@ brew install qemu
    - View virtual machine status and performance
    - Modify virtual machine configuration
    - Delete unnecessary virtual machines
-
-## 📝 Project Screenshots
-
-<details>
-<summary>System Screenshots</summary>
-
-![QEMU Virtual Machine Management System Screenshot](./docs/public/screenshot/home.png)
-![QEMU Virtual Machine Management System Screenshot](./docs/public/screenshot/dashboard.png)
-![QEMU Virtual Machine Management System Screenshot](./docs/public/screenshot/vmscenter.png)
-![QEMU Virtual Machine Management System Screenshot](./docs/public/screenshot/images.png)
-![QEMU Virtual Machine Management System Screenshot](./docs/public/screenshot/network.png)
-![QEMU Virtual Machine Management System Screenshot](./docs/public/screenshot/docview.png)
-
-</details>
 
 ## 📁 Project Structure
 

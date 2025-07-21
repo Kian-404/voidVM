@@ -1,12 +1,33 @@
 version: '3.8'
 
 services:
-  void-vm-app:
+  # 基础镜像构建服务
+  vm-base:
+    build:
+      context: .
+      dockerfile: Dockerfile.base
+    image: vm-base:latest
+    profiles:
+      - base-build
+
+  # VoidVM 主应用
+  vm-app:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: void-vm-container
+    container_name: vm-container
+    depends_on:
+      - vm-base
+    volumes:
+      - /root/test/qemu-nodejs/iso:/app/server/iso
+      - /root/test/qemu-nodejs/vm-storage:/app/server/vm-storage
+      - /root/test/qemu-nodejs/vm-snapshots:/app/server/data/snapshots
+      - /root/test/qemu-nodejs/vm-logs:/app/server/logs
+    network_mode: host
     restart: unless-stopped
-    ports:
-      - '3000:3000'
-      - '6080:6080'
+    privileged: true
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+    devices:
+      - /dev/net/tun:/dev/net/tun

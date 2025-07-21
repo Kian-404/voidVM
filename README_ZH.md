@@ -22,15 +22,15 @@ voidVM 是一个现代化的虚拟机管理平台，提供直观的 Web 界面�
 - [x] 前端页面优化(Bootstrap -> TailwindCSS) 待定
 - [x] 关联用户和虚拟机(Supabase Auth and Virtual Machines)
 - [x] 虚拟机状态监控(QMP)
-- [x] 虚拟机创建流程优化(镜像管理)
-- [x] 虚拟机镜像管理(镜像上传、删除、查看)
-- [x] 虚拟机网络管理(虚拟网络配置)
+- [✅] 虚拟机创建流程优化(镜像管理)
+- [✅] 虚拟机镜像管理(镜像上传、删除、查看)
+- [✅] 虚拟机网络管理(虚拟网络配置)
 - [x] 虚拟机文档管理(虚拟机文档上传、删除、查看)
 - [x] 虚拟机存储管理(虚拟机存储配置)
-- [x] 虚拟机快照管理(虚拟机快照创建、删除、查看)
+- [✅] 虚拟机快照管理(虚拟机快照创建、删除、查看)
 - [x] 后端JavaScript升级Typescript再升级到Bun
 - [x] 项目测试添加(使用Vitest)
-- [x] 项目部署优化(使用Docker)
+- [✅] 项目部署优化(使用Docker)
 - [x] 项目文档优化(使用VitePress)
 - [x] 项目代码优化(使用ESLint和Prettier)
 - [x] 项目CI/CD优化(使用GitHub Actions)
@@ -119,20 +119,6 @@ brew install qemu
    - 查看虚拟机状态和性能
    - 修改虚拟机配置
    - 删除不需要的虚拟机
-
-## 📝 项目截图
-
-<details>
-<summary>系统截图</summary>
-
-![QEMU 虚拟机管理系统截图](./docs/public/screenshot/home.png)
-![QEMU 虚拟机管理系统截图](./docs/public/screenshot/dashboard.png)
-![QEMU 虚拟机管理系统截图](./docs/public/screenshot/vmscenter.png)
-![QEMU 虚拟机管理系统截图](./docs/public/screenshot/images.png)
-![QEMU 虚拟机管理系统截图](./docs/public/screenshot/network.png)
-![QEMU 虚拟机管理系统截图](./docs/public/screenshot/docview.png)
-
-</details>
 
 ## 📁 项目结构
 
