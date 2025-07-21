@@ -3,9 +3,7 @@
     <div class="row mb-4">
       <div class="col-md-8">
         <h1>虚拟机管理</h1>
-        <p class="lead">
-          便捷管理您的 QEMU 虚拟机，支持创建、启动、停止和远程访问
-        </p>
+        <p class="lead">便捷管理您的 QEMU 虚拟机，支持创建、启动、停止和远程访问</p>
       </div>
       <div class="col-md-4 d-flex align-items-center justify-content-end">
         <button class="btn btn-primary" @click="openUploadModal">
@@ -31,7 +29,12 @@
         <div class="modal-content">
           <div class="modal-header">
             <h5 class="modal-title">上传文件到虚拟机</h5>
-            <button type="button" class="btn-close" @click="closeUploadModal" aria-label="Close"></button>
+            <button
+              type="button"
+              class="btn-close"
+              @click="closeUploadModal"
+              aria-label="Close"
+            ></button>
           </div>
           <div class="modal-body">
             <FileUploader @upload-complete="onUploadComplete" />
@@ -44,38 +47,38 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
-import createVMCom from '../components/createVM.vue';
-import listVMCom from '../components/listVM.vue';
-import noVNC from '../components/noVNC.vue';
-// @ts-ignore
-import FileUploader from '../components/FileUploader.vue';
-import { Modal } from 'bootstrap';
+  import { onMounted, ref } from 'vue'
+  import createVMCom from '../components/createVM.vue'
+  import listVMCom from '../components/listVM.vue'
+  import noVNC from '../components/noVNC.vue'
+  // @ts-ignore
+  import FileUploader from '../components/FileUploader.vue'
+  import { Modal } from 'bootstrap'
 
-const listVM = ref(listVMCom);
+  const listVM = ref(listVMCom)
 
-const showFileUploader = ref(false);
-const uploadModal: any = ref(null);
-// Methods
-const loadVMs = async () => {
-  listVM.value.loadVMs();
-};
+  const showFileUploader = ref(false)
+  const uploadModal: any = ref(null)
+  // Methods
+  const loadVMs = async () => {
+    listVM.value.loadVMs()
+  }
 
-// 文件上传完成后的回调
-const onUploadComplete = () => {
-  showFileUploader.value = false;
-  // 可以添加提示或其他操作
-};
-const openUploadModal = () => {
-  uploadModal.value.show();
-};
+  // 文件上传完成后的回调
+  const onUploadComplete = () => {
+    showFileUploader.value = false
+    // 可以添加提示或其他操作
+  }
+  const openUploadModal = () => {
+    uploadModal.value.show()
+  }
 
-const closeUploadModal = () => {
-  uploadModal.value.hide();
-};
-onMounted(() => {
-  uploadModal.value = new Modal(document.getElementById('uploadModal') as HTMLElement);
-});
+  const closeUploadModal = () => {
+    uploadModal.value.hide()
+  }
+  onMounted(() => {
+    uploadModal.value = new Modal(document.getElementById('uploadModal') as HTMLElement)
+  })
 </script>
 
 <style scoped></style>

@@ -6,10 +6,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+  import { ref } from 'vue'
 
-const title = ref('QEMU 虚拟机管理器');
-
+  const title = ref('QEMU 虚拟机管理器')
 </script>
 
 <style scoped></style>
