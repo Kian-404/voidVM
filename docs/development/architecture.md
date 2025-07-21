@@ -1289,7 +1289,7 @@ class ConfigManager {
 
 ```mermaid
 graph TD
-    A[用户界面 Vue] --> B[API Gateway Express]
+    A[用户界面 Vue3] --> B[API Gateway Express]
     B --> C{认证中间件}
     C -->|认证失败| D[返回401错误]
     C -->|认证成功| E[业务逻辑层]

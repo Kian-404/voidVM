@@ -61,7 +61,7 @@ sudo systemctl start libvirtd
 
 ```bash
 # 安装 Node.js (使用 NodeSource)
-curl -fsSL https://deb.nodesource.com/setup_23.x | sudo -E bash -
+curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
 sudo apt-get install -y nodejs
 
 # 安装 pnpm
@@ -78,10 +78,6 @@ cd void-vm
 # 安装依赖
 pnpm install
 
-# 复制环境配置
-cp apps/server/.env.example apps/server/.env
-cp apps/web/.env.example apps/web/.env
-
 # 启动开发服务器
 pnpm dev
 ```
@@ -90,19 +86,14 @@ pnpm dev
 如果一切正常，你将看到：
 
 - 前端服务运行在: http://localhost:5173
-- 后端服务运行在: http://localhost:3000
+- 后端服务运行在: http://localhost:3030
   :::
 
 ## 首次使用
 
 ### 1. 访问 Web 界面
 
-打开浏览器，访问 `http://localhost:5173`，你将看到 VoidVM 的登录界面。
-
-默认管理员账户：
-
-- 用户名: `admin`
-- 密码: `admin123`
+打开浏览器，访问 `http://localhost:5173`，你将看到 VoidVM 的界面。
 
 ### 2. 创建第一个虚拟机
 
@@ -163,61 +154,6 @@ const openVncConsole = vmId => {
 ssh user@localhost -p 2222
 ```
 
-#### Web 终端
-
-直接在浏览器中使用集成的 Web 终端。
-
-## 基础操作
-
-### 虚拟机生命周期管理
-
-```typescript
-// 虚拟机操作 API
-interface VmOperations {
-  start(vmId: string): Promise<void>
-  stop(vmId: string): Promise<void>
-  restart(vmId: string): Promise<void>
-  pause(vmId: string): Promise<void>
-  resume(vmId: string): Promise<void>
-  delete(vmId: string): Promise<void>
-}
-
-// 使用示例
-const vmOps = new VmOperations()
-await vmOps.start('vm-001')
-```
-
-### 快照管理
-
-```typescript
-// 创建快照
-await vmApi.createSnapshot('vm-001', {
-  name: 'clean-install',
-  description: '系统安装完成后的干净状态',
-})
-
-// 恢复快照
-await vmApi.restoreSnapshot('vm-001', 'clean-install')
-```
-
-### 资源监控
-
-```vue
-<template>
-  <div class="vm-monitor">
-    <el-card title="CPU 使用率">
-      <VmCpuChart :vm-id="vmId" />
-    </el-card>
-    <el-card title="内存使用">
-      <VmMemoryChart :vm-id="vmId" />
-    </el-card>
-    <el-card title="磁盘 I/O">
-      <VmDiskChart :vm-id="vmId" />
-    </el-card>
-  </div>
-</template>
-```
-
 ## 常见问题
 
 ### Q: 虚拟机启动失败？
@@ -268,4 +204,3 @@ A: 优化建议：
 - 📖 查看[完整文档](/guide/)
 - 🐛 提交 [GitHub Issue](https://github.com/Kian-404/voidVM/issues)
 - 💬 加入我们的社区讨论
-- 📧 发送邮件至 support@voidvm.com

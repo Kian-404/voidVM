@@ -274,7 +274,7 @@
     border: 1px solid #e1e5e9;
     border-radius: 6px;
     padding: 16px;
-    background-color: #fafbfc;
+    /* background-color: #fafbfc; */
     transition: all 0.3s ease;
     position: relative;
   }
@@ -289,7 +289,7 @@
     top: 8px;
     right: 8px;
     background: rgba(0, 0, 0, 0.7);
-    color: white;
+    /* color: white; */
     padding: 4px 8px;
     border-radius: 4px;
     font-size: 12px;
@@ -374,10 +374,10 @@
     color: #24292f;
   }
 
-  .control-btn:hover:not(:disabled) {
+  /* .control-btn:hover:not(:disabled) {
     background-color: #f6f8fa;
     border-color: #8c959f;
-  }
+  } */
 
   .control-btn:disabled {
     opacity: 0.5;

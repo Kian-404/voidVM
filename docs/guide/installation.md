@@ -15,10 +15,10 @@
 
 ### 软件依赖
 
-- Node.js 18+
-- pnpm 8+
-- QEMU/KVM
-- 现代浏览器
+- Docker 20.10+
+- Docker Compose 1.29.2+
+- Node.js 18+ (可选)
+- pnpm 7+ (可选)
 
 ## 安装步骤
 
@@ -32,61 +32,41 @@ egrep -c '(vmx|svm)' /proc/cpuinfo
 lsmod | grep kvm
 ```
 
-### 2. 安装 QEMU/KVM
-
-::: code-group
-
-```bash [Ubuntu/Debian]
-sudo apt update
-sudo apt install qemu-kvm libvirt-daemon-system libvirt-clients bridge-utils
-sudo usermod -aG libvirt $USER
-sudo usermod -aG kvm $USER
-sudo systemctl enable libvirtd
-sudo systemctl start libvirtd
-```
-
-```bash [CentOS/RHEL]
-sudo yum install qemu-kvm libvirt virt-install bridge-utils
-sudo usermod -aG libvirt $USER
-sudo usermod -aG kvm $USER
-sudo systemctl enable libvirtd
-sudo systemctl start libvirtd
-```
-
-:::
-
-### 3. 安装 Node.js 和 pnpm
+### 2. 安装 Docker 和 Docker Compose
 
 ```bash
-# 安装 Node.js (使用 NodeSource)
-curl -fsSL https://deb.nodesource.com/setup_23.x | sudo -E bash -
-sudo apt-get install -y nodejs
+# 安装 Docker
+curl -fsSL https://get.docker.com -o get-docker.sh
+sudo sh get-docker.sh
+sudo systemctl enable docker
+sudo systemctl start docker
 
-# 安装 pnpm
-npm install -g pnpm
+# 安装 Docker Compose
+sudo curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+sudo chmod +x /usr/local/bin/docker-compose
+
+
 ```
 
-### 4. 下载并启动 VoidVM
+### 3. 部署启动
 
 ```bash
-# 克隆项目
-git clone https://github.com/Kian-404/voidVM.git
-cd void-vm
+#脚本一键启动(recommended)
+./build.sh
 
-# 安装依赖
-pnpm install
+#或者手动启动
 
-# 复制环境配置
-cp apps/server/.env.example apps/server/.env
-cp apps/web/.env.example apps/web/.env
+#构建基础镜像
+docker build -f Dockerfile.base -t vm-base:latest .
 
-# 启动开发服务器
-pnpm dev
+#使用docker-compose启动
+docker-compose up -d
+
 ```
 
 ::: tip 启动成功
-如果一切正常，你将看到：
+如果一切正常，打开访问浏览器你将看到：
 
-- 前端服务运行在: http://localhost:5173
-- 后端服务运行在: http://localhost:3000
-  :::
+- 服务运行在: http://localhost:3030
+
+:::

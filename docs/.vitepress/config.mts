@@ -3,14 +3,6 @@ import { withMermaid } from 'vitepress-plugin-mermaid'
 
 export default withMermaid(
   defineConfig({
-    vite: {
-      ssr: {
-        noExternal: ['debug'], // 强制将 debug 打包到 bundle 中
-      },
-      optimizeDeps: {
-        include: ['debug'], // 预构建 debug
-      },
-    },
     title: 'VoidVM',
     description: '现代化的虚拟机管理平台',
     lang: 'zh-CN',
@@ -47,7 +39,7 @@ export default withMermaid(
               { text: '介绍', link: '/guide/' },
               { text: '快速开始', link: '/guide/getting-started' },
               { text: '安装部署', link: '/guide/installation' },
-              { text: '配置说明', link: '/guide/configuration' },
+              // { text: '配置说明', link: '/guide/configuration' },
               { text: '虚拟机管理', link: '/guide/vm-management' },
             ],
           },

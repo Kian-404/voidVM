@@ -6,6 +6,8 @@ VoidVM 提供了完整的虚拟机生命周期管理功能，从创建、配置�
 
 ## 虚拟机生命周期
 
+<MermaidZoom>
+
 ```mermaid
 stateDiagram-v2
     [*] --> Creating: 创建虚拟机
@@ -23,6 +25,8 @@ stateDiagram-v2
     Stopped --> Deleting: 删除
     Deleting --> [*]: 删除完成
 ```
+
+</MermaidZoom>
 
 ## 创建虚拟机
 

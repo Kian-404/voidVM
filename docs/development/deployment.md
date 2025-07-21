@@ -5,8 +5,8 @@
 ### 1. Dockerfile 配置
 
 ```dockerfile
-# dockerFile
-FROM ubuntu:20.04
+# Dockerfile.base
+FROM ubuntu:24.04
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV TZ=Asia/Shanghai
@@ -16,7 +16,9 @@ ENV TZ=Asia/Shanghai
 RUN apt-get update && apt-get install -y \
     curl \
     wget \
+    unzip \
     git \
+    websockify \
     build-essential \
     python3 \
     python3-pip \
@@ -30,8 +32,18 @@ RUN apt-get update && apt-get install -y \
     pkg-config \
     meson \
     libslirp-dev \
+    device-tree-compiler \
+    flex \
+    bison \
+    net-tools \
+    netcat-openbsd \
+    iproute2 \
+    iptables \
     && rm -rf /var/lib/apt/lists/*
 
+RUN pip3 install tomli --break-system-packages -i https://pypi.tuna.tsinghua.edu.cn/simple
+RUN pip3 install sphinx --break-system-packages -i https://pypi.tuna.tsinghua.edu.cn/simple
+RUN pip3 install ninja --break-system-packages -i https://pypi.tuna.tsinghua.edu.cn/simple
 # 安装Node.js 23.x
 RUN curl -fsSL https://nodejs.org/dist/v23.6.0/node-v23.6.0-linux-x64.tar.xz -o node.tar.xz \
     && tar -xJf node.tar.xz -C /usr/local --strip-components=1 \
@@ -40,44 +52,50 @@ RUN curl -fsSL https://nodejs.org/dist/v23.6.0/node-v23.6.0-linux-x64.tar.xz -o 
 # 验证Node.js安装
 RUN node --version && npm --version
 
-# 下载并编译QEMU (8.2.0)
+# 下载并编译QEMU (10.0.2)
 RUN cd /tmp \
-    && wget https://download.qemu.org/qemu-8.2.0.tar.xz \
-    && tar xvf qemu-8.2.0.tar.xz \
-    && cd qemu-8.2.0 \
+    && wget https://download.qemu.org/qemu-10.0.2.tar.xz \
+    && tar xvf qemu-10.0.2.tar.xz \
+    && cd qemu-10.0.2 \
     && ./configure --target-list=x86_64-softmmu,i386-softmmu,aarch64-softmmu --enable-slirp \
     && make -j$(nproc) \
     && make install \
     && cd / \
-    && rm -rf /tmp/qemu-8.2.0*
+    && rm -rf /tmp/qemu-10.0.2*
 
 # 验证QEMU版本
 RUN qemu-system-x86_64 --version
 
 # 安装npm工具
 RUN npm install -g yarn pm2 nodemon
-
-# china npm registry
 RUN npm config set registry https://registry.npmmirror.com/
 
 
+# 克隆 noVNC
+RUN mkdir -p /root/test
 
-RUN mkdir -p /app
-WORKDIR /app
+# 下载 noVNC 压缩包
+WORKDIR /opt
+RUN wget https://bgithub.xyz/novnc/noVNC/archive/refs/heads/master.zip -O novnc.zip \
+    && unzip novnc.zip \
+    && mv noVNC-master noVNC \
+    && rm novnc.zip
+
+RUN ln -s /opt/noVNC /root/test/noVNC
 
 
-EXPOSE 3000
 CMD ["/bin/bash"]
 
 
 ```
 
 ```dockerfile
-# dockerFile
+# Dockerfile
 # 使用自定义基础镜像
-FROM viod-vm-base:latest
+FROM vm-base:latest
 
 # 设置工作目录
+RUN mkdir -p /app
 WORKDIR /app
 
 # 阶段1: 构建前端
@@ -93,11 +111,23 @@ RUN cd server && npm install --production
 
 COPY apps/server ./server/
 
-# 创建public目录并复制前端构建文件
-RUN mkdir -p ./server/public
-RUN cp -r ./web/dist/* ./server/public/
-# 如果前端输出是dist目录，则使用：
-# RUN cp -r ./web/dist/* ./server/public/
+# 安装和配置 nginx
+RUN apt-get update && apt-get install -y nginx && \
+    rm -rf /var/lib/apt/lists/*
+
+# 创建 nginx 配置文件
+RUN mkdir -p /etc/nginx/sites-available /etc/nginx/sites-enabled
+
+# 复制前端构建文件到 nginx 目录
+RUN mkdir -p /var/www/html
+RUN cp -r ./web/dist/* /var/www/html/
+
+# 复制 nginx 配置文件
+COPY nginx.conf /etc/nginx/sites-available/vm-manager
+
+# 启用站点配置
+RUN ln -s /etc/nginx/sites-available/vm-manager /etc/nginx/sites-enabled/
+RUN rm -f /etc/nginx/sites-enabled/default
 
 # 设置工作目录到server
 WORKDIR /app/server
@@ -105,17 +135,14 @@ WORKDIR /app/server
 # 设置环境变量
 ENV NODE_ENV=production
 
-# 暴露端口
-EXPOSE 3000
-
+COPY start.sh /app/start.sh
+RUN chmod +x /app/start.sh
+# 暴露端口 (nginx 监听 5173，后端服务内部通信)
+EXPOSE 5173
 # 启动应用
-CMD ["node", "server.js"]
+CMD ["/app/start.sh"]
 
 ```
-
----
-
-# TODO: not completed
 
 ### 2. Docker Compose 配置
 
@@ -124,76 +151,30 @@ CMD ["node", "server.js"]
 version: '3.8'
 
 services:
-  web:
+  # VoidVM 主应用
+  vm-app:
     build:
-      context: ./apps/web
-      dockerfile: Dockerfile
-    ports:
-      - '80:80'
-    depends_on:
-      - server
-    networks:
-      - voidvm-network
-
-  server:
-    build:
-      context: ./apps/server
-      dockerfile: Dockerfile
-    ports:
-      - '3000:3000'
-    environment:
-      - NODE_ENV=production
-      - JWT_SECRET=${JWT_SECRET}
-      - DB_PATH=/data/db/voidvm.db
+      context: .
+      dockerfile: Dockerfile10
+    container_name: vm-app
+    # 使用host网络模式时，移除ports配置
+    # ports:
+    #   - '3030:3030' # API 服务端口
+    #   - '6080:6080' # VNC/WebSocket 端口
     volumes:
-      - voidvm-data:/data
-      - /var/run/libvirt:/var/run/libvirt
+      - /root/app/iso:/app/server/iso
+      - /root/app/vm-storage:/app/server/vm-storage
+      - /root/app/vm-snapshots:/app/server/data/snapshots
+    network_mode: host # 使用 host 网络模式
+    restart: unless-stopped
     privileged: true
-    networks:
-      - voidvm-network
-    depends_on:
-      - database
-
-  database:
-    image: postgres:15-alpine
-    environment:
-      - POSTGRES_DB=voidvm
-      - POSTGRES_USER=${DB_USER}
-      - POSTGRES_PASSWORD=${DB_PASSWORD}
-    volumes:
-      - postgres-data:/var/lib/postgresql/data
-    networks:
-      - voidvm-network
-
-  redis:
-    image: redis:7-alpine
-    command: redis-server --appendonly yes
-    volumes:
-      - redis-data:/data
-    networks:
-      - voidvm-network
-
-  nginx:
-    image: nginx:alpine
-    ports:
-      - '443:443'
-    volumes:
-      - ./configs/nginx:/etc/nginx/conf.d
-      - ./ssl:/etc/ssl/certs
-    depends_on:
-      - web
-      - server
-    networks:
-      - voidvm-network
-
-volumes:
-  voidvm-data:
-  postgres-data:
-  redis-data:
-
-networks:
-  voidvm-network:
-    driver: bridge
+  network-service:
+    build: .
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+    devices:
+      - /dev/net/tun:/dev/net/tun
 ```
 
 ### 3. 环境变量配置

@@ -1,241 +1,345 @@
-# 虚拟机 API
+# 虚拟机 API 文档
 
-虚拟机 API 提供了完整的虚拟机生命周期管理功能。
+虚拟机 API 提供了完整的 QEMU 虚拟机生命周期管理功能，包括创建、启动、停止、重启、删除虚拟机以及 VNC 远程访问等功能。
 
 ## 端点概览
 
 <ApiTable :apis="vmApis" />
 
-## 虚拟机列表
+## 虚拟机管理
 
-### GET /api/v1/vms
+### GET /api/vms
 
-获取虚拟机列表，支持分页和过滤。
-
-**请求参数**
-
-| 参数   | 类型   | 必需 | 默认值 | 描述       |
-| ------ | ------ | ---- | ------ | ---------- |
-| page   | number | 否   | 1      | 页码       |
-| limit  | number | 否   | 10     | 每页数量   |
-| status | string | 否   | -      | 按状态过滤 |
-| search | string | 否   | -      | 搜索关键词 |
+获取所有虚拟机列表。
 
 **响应示例**
 
 ```json
 {
   "success": true,
-  "data": {
-    "vms": [
-      {
-        "id": "vm-001",
-        "name": "Web Server",
-        "status": "running",
-        "cpu": 2,
-        "memory": 2048,
-        "disk": 20,
-        "os": "ubuntu20.04",
-        "ip": "192.168.1.100",
-        "createdAt": "2024-01-01T12:00:00Z",
-        "updatedAt": "2024-01-01T12:30:00Z"
-      }
-    ],
-    "pagination": {
-      "page": 1,
-      "limit": 10,
-      "total": 25,
-      "pages": 3
+  "vms": [
+    {
+      "name": "test-vm",
+      "status": "running",
+      "pid": 12345,
+      "memory": 2048,
+      "cpuCores": 2,
+      "diskSize": 20,
+      "vncPort": 5900,
+      "startTime": "2023-07-15T10:30:00.000Z"
     }
-  }
+  ]
 }
 ```
 
-## 创建虚拟机
+### POST /api/vms
 
-### POST /api/v1/vms
-
-创建新的虚拟机。
+创建新虚拟机。
 
 **请求体**
 
 ```json
 {
   "name": "my-vm",
-  "template": "ubuntu20.04",
-  "cpu": 2,
   "memory": 2048,
-  "disk": 20,
-  "network": {
-    "type": "bridge",
-    "bridge": "br0"
-  },
-  "autoStart": false
+  "cpuCores": 2,
+  "diskSize": 20,
+  "networkType": "user",
+  "vncPort": 5900,
+  "bootOrder": "cd,hd",
+  "isoPath": "/path/to/image.iso"
 }
 ```
-
-**字段说明**
-
-| 字段      | 类型    | 必需 | 描述         |
-| --------- | ------- | ---- | ------------ |
-| name      | string  | 是   | 虚拟机名称   |
-| template  | string  | 是   | 模板ID       |
-| cpu       | number  | 是   | CPU核数      |
-| memory    | number  | 是   | 内存大小(MB) |
-| disk      | number  | 是   | 磁盘大小(GB) |
-| network   | object  | 否   | 网络配置     |
-| autoStart | boolean | 否   | 是否自动启动 |
 
 **响应示例**
 
 ```json
 {
   "success": true,
-  "data": {
-    "id": "vm-002",
+  "message": "虚拟机创建成功",
+  "vm": {
     "name": "my-vm",
-    "status": "creating",
-    "progress": 0
+    "status": "stopped",
+    "memory": 2048,
+    "cpuCores": 2
   }
 }
 ```
 
-## 虚拟机控制
+## 虚拟机控制操作
 
-### POST /api/v1/vms/{id}/start
+### POST /api/vms/{name}/start
 
-启动虚拟机。
+启动指定虚拟机。
 
-### POST /api/v1/vms/{id}/stop
+**路径参数**
 
-停止虚拟机。
+| 参数 | 类型   | 必需 | 描述       |
+| ---- | ------ | ---- | ---------- |
+| name | string | 是   | 虚拟机名称 |
+
+**响应示例**
+
+```json
+{
+  "success": true,
+  "message": "虚拟机启动成功",
+  "vm": {
+    "name": "test-vm",
+    "status": "running",
+    "pid": 12345
+  }
+}
+```
+
+**错误响应**
+
+- `404` - 虚拟机不存在
+- `400` - 虚拟机已在运行或启动失败
+
+### POST /api/vms/{name}/stop
+
+停止指定虚拟机。
+
+**路径参数**
+
+| 参数 | 类型   | 必需 | 描述       |
+| ---- | ------ | ---- | ---------- |
+| name | string | 是   | 虚拟机名称 |
+
+**响应示例**
+
+```json
+{
+  "success": true,
+  "message": "虚拟机停止成功"
+}
+```
+
+**错误响应**
+
+- `404` - 虚拟机不存在
+- `400` - 虚拟机未运行或停止失败
+
+### POST /api/vms/{name}/restart
+
+重启指定虚拟机。
+
+**路径参数**
+
+| 参数 | 类型   | 必需 | 描述       |
+| ---- | ------ | ---- | ---------- |
+| name | string | 是   | 虚拟机名称 |
 
 **请求体**
 
 ```json
 {
-  "force": false
+  "metadata": {
+    "lastPid": 12345
+  }
 }
 ```
 
-### POST /api/v1/vms/{id}/restart
-
-重启虚拟机。
-
-### POST /api/v1/vms/{id}/pause
-
-暂停虚拟机。
-
-### POST /api/v1/vms/{id}/resume
-
-恢复虚拟机。
-
-## 快照管理
-
-### GET /api/v1/vms/{id}/snapshots
-
-获取虚拟机快照列表。
-
-### POST /api/v1/vms/{id}/snapshots
-
-创建快照。
+**响应示例**
 
 ```json
 {
-  "name": "backup-2024-01-01",
-  "description": "系统更新前的备份"
+  "success": true,
+  "message": "虚拟机 test-vm 已成功重启",
+  "vm": {
+    "name": "test-vm",
+    "status": "running",
+    "pid": 12346,
+    "startTime": "2023-07-15T10:30:00.000Z"
+  }
 }
 ```
 
-### POST /api/v1/vms/{id}/snapshots/{snapshotId}/restore
+### DELETE /api/vms/{name}
 
-恢复快照。
+删除指定虚拟机。
 
-### DELETE /api/v1/vms/{id}/snapshots/{snapshotId}
+**路径参数**
 
-删除快照。
+| 参数 | 类型   | 必需 | 描述       |
+| ---- | ------ | ---- | ---------- |
+| name | string | 是   | 虚拟机名称 |
+
+**请求体**
+
+```json
+{
+  "metadata": {
+    "lastPid": 12345
+  }
+}
+```
+
+**响应示例**
+
+```json
+{
+  "success": true,
+  "message": "虚拟机已成功删除"
+}
+```
+
+## 虚拟机配置管理
+
+### PUT /vms/{name}/config
+
+更新虚拟机配置参数。
+
+**路径参数**
+
+| 参数 | 类型   | 必需 | 描述       |
+| ---- | ------ | ---- | ---------- |
+| name | string | 是   | 虚拟机名称 |
+
+**请求体**
+
+```json
+{
+  "memory": 2048,
+  "cpuCores": 2,
+  "diskSize": 20,
+  "networkType": "user",
+  "vncPort": 5900,
+  "bootOrder": "cd,hd",
+  "isoPath": "/path/to/image.iso"
+}
+```
+
+**字段说明**
+
+| 字段        | 类型    | 描述                       |
+| ----------- | ------- | -------------------------- |
+| memory      | integer | 内存大小 (MB)              |
+| cpuCores    | integer | CPU 核心数                 |
+| diskSize    | integer | 磁盘大小 (GB)              |
+| networkType | string  | 网络类型 (user/bridge/nat) |
+| vncPort     | integer | VNC 端口                   |
+| bootOrder   | string  | 启动顺序                   |
+| isoPath     | string  | ISO 镜像路径               |
+
+**响应示例**
+
+```json
+{
+  "success": true,
+  "message": "虚拟机 test-vm 配置已更新",
+  "requiresRestart": true,
+  "config": {
+    "memory": 2048,
+    "cpuCores": 2,
+    "diskSize": 20,
+    "networkType": "user",
+    "vncPort": 5900,
+    "bootOrder": "cd,hd",
+    "isoPath": "/path/to/image.iso"
+  }
+}
+```
+
+## ISO 镜像管理
+
+### POST /api/vms/{name}/toggleMountIso
+
+切换虚拟机 ISO 镜像的挂载状态。
+
+**路径参数**
+
+| 参数 | 类型   | 必需 | 描述       |
+| ---- | ------ | ---- | ---------- |
+| name | string | 是   | 虚拟机名称 |
+
+**请求体**
+
+```json
+{
+  "mountStatus": true
+}
+```
+
+**字段说明**
+
+| 字段        | 类型    | 必需 | 描述                                    |
+| ----------- | ------- | ---- | --------------------------------------- |
+| mountStatus | boolean | 是   | 挂载状态，true 表示挂载，false 表示卸载 |
+
+**响应示例**
+
+```json
+{
+  "success": true,
+  "message": "ISO successfully mounted to VM 'test-vm'",
+  "vm": {
+    "name": "test-vm",
+    "isMountIso": true
+  }
+}
+```
+
+## VNC 远程访问
+
+### POST /api/novnc
+
+启动 NoVNC 服务（通用接口）。
+
+### POST /api/novnc/{name}
+
+为指定虚拟机启动 NoVNC 服务。
+
+**路径参数**
+
+| 参数 | 类型   | 必需 | 描述       |
+| ---- | ------ | ---- | ---------- |
+| name | string | 是   | 虚拟机名称 |
+
+**请求体**
+
+```json
+{
+  "vncPort": 5900,
+  "webPort": 6080
+}
+```
+
+**字段说明**
+
+| 字段    | 类型    | 必需 | 描述                           |
+| ------- | ------- | ---- | ------------------------------ |
+| vncPort | integer | 是   | QEMU VNC 服务的端口号          |
+| webPort | integer | 否   | NoVNC Web 服务的端口号（可选） |
+
+**响应示例**
+
+```json
+{
+  "success": true,
+  "url": "http://localhost:6080/vnc.html?host=localhost&port=6080&path=websockify/?token=vm1",
+  "vncPort": 5900,
+  "webPort": 6080,
+  "token": "vm1",
+  "pid": 12345
+}
+```
 
 <script setup>
 const vmApis = [
-  { method: 'GET', path: '/api/v1/vms', description: '获取虚拟机列表', status: 'stable' },
-  { method: 'POST', path: '/api/v1/vms', description: '创建虚拟机', status: 'stable' },
-  { method: 'GET', path: '/api/v1/vms/{id}', description: '获取虚拟机详情', status: 'stable' },
-  { method: 'PUT', path: '/api/v1/vms/{id}', description: '更新虚拟机配置', status: 'stable' },
-  { method: 'DELETE', path: '/api/v1/vms/{id}', description: '删除虚拟机', status: 'stable' },
-  { method: 'POST', path: '/api/v1/vms/{id}/start', description: '启动虚拟机', status: 'stable' },
-  { method: 'POST', path: '/api/v1/vms/{id}/stop', description: '停止虚拟机', status: 'stable' },
-  { method: 'POST', path: '/api/v1/vms/{id}/restart', description: '重启虚拟机', status: 'stable' },
-  { method: 'GET', path: '/api/v1/vms/{id}/status', description: '获取虚拟机状态', status: 'stable' },
-  { method: 'GET', path: '/api/v1/vms/{id}/snapshots', description: '获取快照列表', status: 'beta' },
-  { method: 'POST', path: '/api/v1/vms/{id}/snapshots', description: '创建快照', status: 'beta' }
+  { method: 'GET', path: '/api/vms', description: '获取所有虚拟机', status: 'stable' },
+  { method: 'POST', path: '/api/vms', description: '创建虚拟机', status: 'stable' },
+  { method: 'POST', path: '/api/vms/{name}/start', description: '启动虚拟机', status: 'stable' },
+  { method: 'POST', path: '/api/vms/{name}/stop', description: '停止虚拟机', status: 'stable' },
+  { method: 'POST', path: '/api/vms/{name}/restart', description: '重启虚拟机', status: 'stable' },
+  { method: 'DELETE', path: '/api/vms/{name}', description: '删除虚拟机', status: 'stable' },
+  { method: 'PUT', path: '/vms/{name}/config', description: '更新虚拟机配置', status: 'stable' },
+  { method: 'POST', path: '/api/vms/{name}/toggleMountIso', description: '切换ISO挂载状态', status: 'stable' },
+  { method: 'POST', path: '/api/novnc', description: '启动NoVNC服务', status: 'stable' },
+  { method: 'POST', path: '/api/novnc/{name}', description: '为虚拟机启动NoVNC', status: 'stable' }
 ]
 </script>
-
-## 虚拟机监控
-
-### GET /api/v1/vms/{id}/metrics
-
-获取虚拟机性能指标。
-
-**查询参数**
-
-| 参数     | 类型   | 必需 | 描述                  |
-| -------- | ------ | ---- | --------------------- |
-| from     | string | 否   | 开始时间 (ISO 8601)   |
-| to       | string | 否   | 结束时间 (ISO 8601)   |
-| interval | string | 否   | 数据间隔 (1m, 5m, 1h) |
-
-**响应示例**
-
-```json
-{
-  "success": true,
-  "data": {
-    "cpu": {
-      "usage": 45.2,
-      "history": [
-        { "timestamp": "2024-01-01T12:00:00Z", "value": 42.1 },
-        { "timestamp": "2024-01-01T12:01:00Z", "value": 45.2 }
-      ]
-    },
-    "memory": {
-      "used": 1536,
-      "total": 2048,
-      "usage": 75.0
-    },
-    "disk": {
-      "read": 1024000,
-      "write": 512000,
-      "usage": 60.5
-    },
-    "network": {
-      "rx": 1048576,
-      "tx": 524288
-    }
-  }
-}
-```
-
-## 虚拟机控制台
-
-### GET /api/v1/vms/{id}/console
-
-获取控制台连接信息。
-
-**响应示例**
-
-```json
-{
-  "success": true,
-  "data": {
-    "type": "vnc",
-    "host": "localhost",
-    "port": 5900,
-    "password": "console123",
-    "url": "ws://localhost:3000/console/vm-001"
-  }
-}
-```
 
 ## 错误码
 
@@ -244,9 +348,10 @@ const vmApis = [
 | VM_NOT_FOUND           | 404        | 虚拟机不存在   |
 | VM_ALREADY_RUNNING     | 400        | 虚拟机已在运行 |
 | VM_ALREADY_STOPPED     | 400        | 虚拟机已停止   |
-| INSUFFICIENT_RESOURCES | 400        | 资源不足       |
-| SNAPSHOT_NOT_FOUND     | 404        | 快照不存在     |
-| OPERATION_IN_PROGRESS  | 409        | 操作正在进行中 |
+| VM_NOT_RUNNING         | 400        | 虚拟机未运行   |
+| INVALID_REQUEST_PARAMS | 400        | 无效的请求参数 |
+| NOVNC_START_FAILED     | 400        | NoVNC 启动失败 |
+| INTERNAL_SERVER_ERROR  | 500        | 服务器内部错误 |
 
 ## 使用示例
 
@@ -254,110 +359,64 @@ const vmApis = [
 
 ```javascript
 class VmManager {
-  constructor(apiBase, token) {
+  constructor(apiBase) {
     this.apiBase = apiBase
-    this.token = token
   }
 
-  async getVms(filters = {}) {
-    const params = new URLSearchParams(filters)
-    const response = await fetch(`${this.apiBase}/vms?${params}`, {
-      headers: { Authorization: `Bearer ${this.token}` },
-    })
+  async getAllVms() {
+    const response = await fetch(`${this.apiBase}/vms`)
     return response.json()
   }
 
   async createVm(config) {
     const response = await fetch(`${this.apiBase}/vms`, {
       method: 'POST',
-      headers: {
-        Authorization: `Bearer ${this.token}`,
-        'Content-Type': 'application/json',
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(config),
     })
     return response.json()
   }
 
-  async startVm(vmId) {
-    const response = await fetch(`${this.apiBase}/vms/${vmId}/start`, {
+  async startVm(vmName) {
+    const response = await fetch(`${this.apiBase}/vms/${vmName}/start`, {
       method: 'POST',
-      headers: { Authorization: `Bearer ${this.token}` },
+    })
+    return response.json()
+  }
+
+  async stopVm(vmName) {
+    const response = await fetch(`${this.apiBase}/vms/${vmName}/stop`, {
+      method: 'POST',
+    })
+    return response.json()
+  }
+
+  async startNoVNC(vmName, vncPort, webPort = 6080) {
+    const response = await fetch(`${this.apiBase}/novnc/${vmName}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ vncPort, webPort }),
     })
     return response.json()
   }
 }
 
 // 使用示例
-const vmManager = new VmManager('http://localhost:3000/api/v1', 'your-token')
+const vmManager = new VmManager('http://localhost:3000/api')
 
 // 创建虚拟机
 const newVm = await vmManager.createVm({
   name: 'web-server',
-  template: 'ubuntu20.04',
-  cpu: 2,
   memory: 2048,
-  disk: 20,
+  cpuCores: 2,
+  diskSize: 20,
+  vncPort: 5900,
 })
 
 // 启动虚拟机
-await vmManager.startVm(newVm.data.id)
-```
+await vmManager.startVm('web-server')
 
-### Python
-
-```python
-import asyncio
-import aiohttp
-
-class VmManager:
-    def __init__(self, api_base, token):
-        self.api_base = api_base
-        self.token = token
-        self.headers = {'Authorization': f'Bearer {token}'}
-
-    async def get_vms(self, filters=None):
-        async with aiohttp.ClientSession() as session:
-            params = filters or {}
-            async with session.get(
-                f'{self.api_base}/vms',
-                headers=self.headers,
-                params=params
-            ) as response:
-                return await response.json()
-
-    async def create_vm(self, config):
-        async with aiohttp.ClientSession() as session:
-            async with session.post(
-                f'{self.api_base}/vms',
-                headers={**self.headers, 'Content-Type': 'application/json'},
-                json=config
-            ) as response:
-                return await response.json()
-
-    async def start_vm(self, vm_id):
-        async with aiohttp.ClientSession() as session:
-            async with session.post(
-                f'{self.api_base}/vms/{vm_id}/start',
-                headers=self.headers
-            ) as response:
-                return await response.json()
-
-# 使用示例
-async def main():
-    vm_manager = VmManager('http://localhost:3000/api/v1', 'your-token')
-
-    # 创建虚拟机
-    new_vm = await vm_manager.create_vm({
-        'name': 'web-server',
-        'template': 'ubuntu20.04',
-        'cpu': 2,
-        'memory': 2048,
-        'disk': 20
-    })
-
-    # 启动虚拟机
-    await vm_manager.start_vm(new_vm['data']['id'])
-
-asyncio.run(main())
+// 启动 NoVNC 服务
+const vncInfo = await vmManager.startNoVNC('web-server', 5900)
+console.log('VNC URL:', vncInfo.url)
 ```
