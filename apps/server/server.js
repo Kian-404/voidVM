@@ -1,31 +1,29 @@
-const express = require('express')
-const http = require('http')
-const path = require('path')
-const bodyParser = require('body-parser')
-const QemuManager = require('./qemu-manager')
-const { setupCommonMiddlewares } = require('./middleware/index.js')
-const cors = require('cors')
-require('./config/index')
+import express from 'express'
+import http from 'http'
+import path from 'path'
+import bodyParser from 'body-parser'
+import QemuManager from './qemu-manager.js'
+import { setupCommonMiddlewares } from './middleware/index.js'
+import setupWebSockets from './services/webSocketService.js'
+import swaggerUi from 'swagger-ui-express'
+import swaggerSpec from './swagger.js'
+import config from './config/index.js'
+
 const qemuManager = new QemuManager({
-  vmStoragePath: path.join(__dirname, './vm-storage'),
+  vmStoragePath: path.join(path.dirname(new URL(import.meta.url).pathname), './vm-storage'),
 })
 
-const setupWebSockets = require('./services/webSocketService.js')
+const port = process.env.PORT || config.port || 3000
 
 const app = express()
-// app.use(cors())
-setupCommonMiddlewares(app)
 const server = http.createServer(app)
-// const wss = new WebSocket.Server({ server });
-const port = process.env.PORT || 3000
+setupCommonMiddlewares(app)
 
 // 中间件
 app.use(bodyParser.json())
 app.use(express.static('public'))
+
 if (process.env.NODE_ENV === 'development') {
-  // swagger
-  const swaggerUi = require('swagger-ui-express')
-  const swaggerSpec = require('./swagger.js')
   // 设置 Swagger UI
   app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec))
 
@@ -39,21 +37,27 @@ if (process.env.NODE_ENV === 'development') {
 // websocket
 setupWebSockets(server)
 
-app.use('/', require('./routers/index.js'))
+// 路由
+app.use('/', (await import('./routers/index.js')).default)
+
 // 启动服务器
 server.listen(port, '0.0.0.0', () => {
   console.log(`QEMU API server listening at http://localhost:${port}`)
 })
 
-// 优雅关闭
-process.on('SIGINT', () => {
+// 关闭程序时，停止所有虚拟机
+process.on('SIGINT', async () => {
   console.log('Shutting down server...')
+
   // 停止所有虚拟机
-  console.log('listRunningVMs all VMs...', qemuManager.listRunningVMs())
-  qemuManager.listRunningVMs().forEach(vm => {
+  const runningVMs = qemuManager.listRunningVMs()
+  console.log('listRunningVMs all VMs...', runningVMs)
+
+  for (const vm of runningVMs) {
     let vmName = JSON.parse(vm).name
     console.log('Stopping VM: ', vmName)
-    qemuManager.stopVM(vmName)
-  })
+    await qemuManager.stopVM(vmName)
+  }
+
   process.exit(0)
 })

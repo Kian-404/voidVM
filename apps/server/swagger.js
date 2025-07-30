@@ -1,7 +1,6 @@
-// swagger.js
-const swaggerJsdoc = require('swagger-jsdoc')
-require('./config/index')
-const POST = process.env.PORT || 3000
+import swaggerJsdoc from 'swagger-jsdoc'
+import config from './config/index.js'
+
 const swaggerOptions = {
   definition: {
     openapi: '3.0.0',
@@ -17,7 +16,7 @@ const swaggerOptions = {
     },
     servers: [
       {
-        url: 'http://localhost:3000', // 开发环境
+        url: `http://localhost:${config.port || 3000}`, // 开发环境
         description: '开发服务器',
       },
       {
@@ -105,4 +104,4 @@ const swaggerOptions = {
 
 const swaggerSpec = swaggerJsdoc(swaggerOptions)
 
-module.exports = swaggerSpec
+export default swaggerSpec
