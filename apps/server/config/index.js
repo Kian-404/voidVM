@@ -1,16 +1,21 @@
-// config.js
-const path = require('path')
+import path from 'path'
+import { fileURLToPath } from 'url'
+import { config } from 'dotenv'
+
 // 根据 NODE_ENV 加载对应的环境变量文件
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
 const envFile = process.env.NODE_ENV === 'production' ? '.env.production' : '.env.development'
-require('dotenv').config({ path: path.resolve(process.cwd(), envFile) })
+config({ path: path.resolve(__dirname, envFile) })
 
 console.log('process.cwd()', process.cwd())
-console.log('path', path.resolve(process.cwd(), envFile))
+console.log('path', path.resolve(__dirname, envFile))
 console.log('process.env', process.env.NODE_ENV)
-module.exports = {
+
+export default {
   port: process.env.PORT || 3000,
   nodeEnv: process.env.NODE_ENV || 'development',
-  path: {
+  paths: {
     ISOLISTPATH: process.env.ISO_LIST_PATH,
   },
   db: {
