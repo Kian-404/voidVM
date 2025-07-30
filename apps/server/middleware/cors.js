@@ -129,3 +129,13 @@ const dynamicCors = () => {
 
 // 导出所有 CORS 配置函数
 export { basicCors, customCors, developmentCors, productionCors, apiCors, uploadCors, dynamicCors }
+
+export default {
+  basicCors,
+  customCors,
+  developmentCors,
+  productionCors,
+  apiCors,
+  uploadCors,
+  dynamicCors,
+}

@@ -61,3 +61,4 @@ const asyncHandler = fn => (req, res, next) => {
 
 // 导出所有错误处理中间件
 export { notFound, errorHandler, asyncHandler }
+export default { notFound, errorHandler, asyncHandler }
