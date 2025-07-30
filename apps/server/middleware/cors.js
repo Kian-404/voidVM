@@ -1,6 +1,5 @@
 // middleware/cors.js
-require('../config/index')
-const cors = require('cors')
+import cors from 'cors'
 
 // 基础 CORS 配置 - 允许所有来源
 const basicCors = () => {
@@ -16,18 +15,18 @@ const basicCors = () => {
 
 // 自定义 CORS 配置
 const customCors = (options = {}) => {
-  // const defaultOptions = {
-  //   origin: true, // 默认允许所有来源
-  //   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
-  //   allowedHeaders: ['Content-Type', 'Authorization', 'X-API-Key', 'X-Requested-With'],
-  //   credentials: false,
-  //   maxAge: 86400, // 24小时
-  //   optionsSuccessStatus: 200,
-  // }
+  const defaultOptions = {
+    origin: true, // 默认允许所有来源
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-API-Key', 'X-Requested-With'],
+    credentials: false,
+    maxAge: 86400, // 24小时
+    optionsSuccessStatus: 200,
+  }
 
-  // const config = { ...defaultOptions, ...options }
+  const config = { ...defaultOptions, ...options }
 
-  return cors()
+  return cors(config)
 }
 
 // 开发环境 CORS - 允许所有来源
@@ -128,33 +127,5 @@ const dynamicCors = () => {
   })
 }
 
-module.exports = {
-  // 基础配置
-  basicCors,
-  customCors,
-
-  // 环境特定配置
-  developmentCors,
-  productionCors,
-
-  // 用途特定配置
-  apiCors,
-  uploadCors,
-  dynamicCors,
-
-  // // 便捷方法
-  // getAllowAllCors: () =>
-  //   cors({
-  //     origin: true,
-  //     credentials: true,
-  //     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
-  //     allowedHeaders: ['Content-Type', 'Authorization', 'X-API-Key'],
-  //   }),
-
-  // // 根据环境自动选择配置
-  // getEnvironmentCors: () => {
-  //   return process.env.NODE_ENV === 'production'
-  //     ? productionCors(process.env.ALLOWED_ORIGINS?.split(',') || [])
-  //     : developmentCors()
-  // },
-}
+// 导出所有 CORS 配置函数
+export { basicCors, customCors, developmentCors, productionCors, apiCors, uploadCors, dynamicCors }

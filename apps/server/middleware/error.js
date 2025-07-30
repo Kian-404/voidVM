@@ -1,3 +1,6 @@
+// middleware/error.js
+import config from '../config/index.js'
+
 // 404 错误处理
 const notFound = (req, res, next) => {
   const error = new Error(`Not Found - ${req.originalUrl}`)
@@ -47,7 +50,7 @@ const errorHandler = (err, req, res, next) => {
   res.status(error.status || 500).json({
     success: false,
     error: error.message || '服务器内部错误',
-    ...(process.env.NODE_ENV === 'development' && { stack: err.stack }),
+    ...(config.nodeEnv === 'development' && { stack: err.stack }),
   })
 }
 
@@ -56,8 +59,5 @@ const asyncHandler = fn => (req, res, next) => {
   Promise.resolve(fn(req, res, next)).catch(next)
 }
 
-module.exports = {
-  notFound,
-  errorHandler,
-  asyncHandler,
-}
+// 导出所有错误处理中间件
+export { notFound, errorHandler, asyncHandler }

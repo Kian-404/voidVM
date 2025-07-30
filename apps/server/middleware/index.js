@@ -1,63 +1,80 @@
-// 导入所有中间件模块
-const cors = require('./cors')
-const error = require('./error')
-const logger = require('./logger')
-const rateLimiter = require('./rateLimiter')
-const security = require('./security')
+// middleware/index.js
+import cors from './cors.js'
+import error from './error.js'
+import logger from './logger.js'
+import rateLimiter from './rateLimiter.js'
+import security from './security.js'
 
-// 常用中间件组合
-const commonMiddlewares = [
-  cors.customCors(),
-  security.hideServerInfo,
-  // security.basicSecurity,
-  logger.requestLogger,
-  // rateLimiter.basicLimiter,
-  // security.xssProtection,
-  security.sqlInjectionProtection,
-]
+// Configuration constants
+const DEFAULT_ALLOWED_ORIGINS = ['http://localhost:3000']
 
-// API 中间件组合
-const apiMiddlewares = [
-  security.hideServerInfo,
-  cors.customCors({
-    origin: process.env.ALLOWED_ORIGINS?.split(',') || ['http://localhost:3000'],
-  }),
-  logger.requestLogger,
-  rateLimiter.apiLimiter,
-  security.xssProtection,
-]
+// Middleware compositions
+const middlewareCompositions = {
+  common: [
+    cors.customCors(),
+    security.hideServerInfo,
+    logger.requestLogger,
+    security.sqlInjectionProtection,
+  ],
 
-// 管理员中间件组合
-const adminMiddlewares = [...apiMiddlewares]
+  api: [
+    security.hideServerInfo,
+    cors.customCors({
+      origin: process.env.ALLOWED_ORIGINS?.split(',') || DEFAULT_ALLOWED_ORIGINS,
+    }),
+    logger.requestLogger,
+    rateLimiter.apiLimiter,
+    security.xssProtection,
+  ],
 
-module.exports = {
-  // 按模块导出
+  admin: null, // Will be initialized below
+}
+
+// Initialize admin middlewares (same as api for now)
+middlewareCompositions.admin = [...middlewareCompositions.api]
+
+/**
+ * Setup common middlewares on an Express app
+ * @param {import('express').Application} app - Express application instance
+ */
+export const setupCommonMiddlewares = app => {
+  middlewareCompositions.common.forEach(middleware => {
+    app.use(middleware)
+  })
+
+  // Error handling middlewares should be last
+  app.use(logger.errorLogger)
+  app.use(error.errorHandler)
+}
+
+/**
+ * Setup API-specific middlewares on an Express router
+ * @param {import('express').Router} router - Express router instance
+ */
+export const setupApiMiddlewares = router => {
+  middlewareCompositions.api.forEach(middleware => {
+    router.use(middleware)
+  })
+}
+
+// Export individual middleware modules
+export { cors, error, logger, rateLimiter, security }
+
+// Export middleware compositions
+export const commonMiddlewares = middlewareCompositions.common
+export const apiMiddlewares = middlewareCompositions.api
+export const adminMiddlewares = middlewareCompositions.admin
+
+// Default export containing all exports
+export default {
   cors,
   error,
   logger,
   rateLimiter,
   security,
-
-  // 组合中间件
   commonMiddlewares,
   apiMiddlewares,
   adminMiddlewares,
-
-  // 快捷使用函数
-  setupCommonMiddlewares: app => {
-    commonMiddlewares.forEach(middleware => {
-      app.use(middleware)
-    })
-
-    // 错误处理中间件需要放在最后
-    // app.use(error.notFound)
-    app.use(logger.errorLogger)
-    app.use(error.errorHandler)
-  },
-
-  setupApiMiddlewares: router => {
-    apiMiddlewares.forEach(middleware => {
-      router.use(middleware)
-    })
-  },
+  setupCommonMiddlewares,
+  setupApiMiddlewares,
 }

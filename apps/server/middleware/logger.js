@@ -1,17 +1,51 @@
-const fs = require('fs')
-const path = require('path')
+// middleware/logger.js
+import fs from 'fs/promises'
+import path from 'path'
+import { fileURLToPath } from 'url'
 
-// 确保日志目录存在
-const logDir = path.join(__dirname, '../logs')
-if (!fs.existsSync(logDir)) {
-  fs.mkdirSync(logDir, { recursive: true })
+// Get current directory path in ESM
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
+
+// Configuration
+const LOG_DIR = path.join(__dirname, '../logs')
+const DATE_FORMAT = new Intl.DateTimeFormat('en-US', {
+  year: 'numeric',
+  month: '2-digit',
+  day: '2-digit',
+})
+
+// Ensure log directory exists
+const ensureLogDir = async () => {
+  try {
+    await fs.mkdir(LOG_DIR, { recursive: true })
+  } catch (err) {
+    console.error('Failed to create log directory:', err)
+  }
 }
 
-// 请求日志中间件
-const requestLogger = (req, res, next) => {
-  const start = Date.now()
+// Format today's date for log filenames
+const getTodayDate = () => {
+  const now = new Date()
+  return DATE_FORMAT.format(now).replace(/\//g, '-')
+}
 
-  // 保存原始的 res.end 方法
+// Write log to file helper
+const writeLog = async (filename, data) => {
+  try {
+    const logFile = path.join(LOG_DIR, filename)
+    await fs.appendFile(logFile, JSON.stringify(data) + '\n')
+  } catch (err) {
+    console.error('Failed to write log:', err)
+  }
+}
+
+/**
+ * Request logger middleware
+ * Logs request details including method, URL, status code, and duration
+ */
+export const requestLogger = (req, res, next) => {
+  const start = Date.now()
   const originalEnd = res.end
 
   res.end = function (...args) {
@@ -24,29 +58,27 @@ const requestLogger = (req, res, next) => {
       userAgent: req.get('User-Agent'),
       statusCode: res.statusCode,
       duration: `${duration}ms`,
-      body: req.method !== 'GET' ? req.body : undefined,
+      ...(req.method !== 'GET' && { body: req.body }),
     }
 
-    // 写入日志文件
-    const logString = JSON.stringify(logData) + '\n'
-    const logFile = path.join(logDir, `access-${new Date().toISOString().split('T')[0]}.log`)
+    // Write to access log
+    const accessLogFile = `access-${getTodayDate()}.log`
+    writeLog(accessLogFile, logData)
 
-    fs.appendFile(logFile, logString, err => {
-      if (err) console.error('日志写入失败:', err)
-    })
-
-    // 控制台输出
+    // Console output
     console.log(`${logData.method} ${logData.url} ${logData.statusCode} - ${logData.duration}`)
 
-    // 调用原始的 end 方法
     originalEnd.apply(this, args)
   }
 
   next()
 }
 
-// 错误日志中间件
-const errorLogger = (err, req, res, next) => {
+/**
+ * Error logger middleware
+ * Logs error details including stack trace and request context
+ */
+export const errorLogger = (err, req, res, next) => {
   const errorData = {
     timestamp: new Date().toISOString(),
     method: req.method,
@@ -62,17 +94,18 @@ const errorLogger = (err, req, res, next) => {
     query: req.query,
   }
 
-  const logString = JSON.stringify(errorData) + '\n'
-  const logFile = path.join(logDir, `error-${new Date().toISOString().split('T')[0]}.log`)
-
-  fs.appendFile(logFile, logString, writeErr => {
-    if (writeErr) console.error('错误日志写入失败:', writeErr)
-  })
+  // Write to error log
+  const errorLogFile = `error-${getTodayDate()}.log`
+  writeLog(errorLogFile, errorData)
 
   next(err)
 }
 
-module.exports = {
+// Initialize log directory when module loads
+ensureLogDir()
+
+// Export all loggers
+export default {
   requestLogger,
   errorLogger,
 }
