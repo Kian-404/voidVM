@@ -1,15 +1,16 @@
-const multer = require('multer')
-const path = require('path')
-const fs = require('fs-extra')
-const imageManager = require('../utils/imageManager')
+import multer from 'multer'
+import path from 'path'
+import fs from 'fs-extra'
+import ImageManager from '../utils/imageManager.js'
+import crypto from 'crypto'
 
-const ImageManager = new imageManager()
+const imageManager = new ImageManager()
 
 class ImageController {
   // GET /images
   async getAllImages(req, res) {
     try {
-      const images = await ImageManager.getAllImages()
+      const images = await imageManager.getAllImages()
       res.json(images)
     } catch (error) {
       res.status(500).json({ error: error.message })
@@ -19,7 +20,7 @@ class ImageController {
   // GET ISO
   async getISOImages(req, res) {
     try {
-      const images = await ImageManager.getISOImages()
+      const images = await imageManager.getISOImages()
       res.json(images)
     } catch (error) {
       res.status(500).json({ error: error.message })
@@ -29,7 +30,7 @@ class ImageController {
   // GET DISK
   async getDiskImages(req, res) {
     try {
-      const images = await ImageManager.getDiskImages()
+      const images = await imageManager.getDiskImages()
       res.json(images)
     } catch (error) {
       res.status(500).json({ error: error.message })
@@ -39,14 +40,14 @@ class ImageController {
   // GET /images/:id
   async getImageById(req, res) {
     try {
-      const images = await ImageManager.getAllImages()
+      const images = await imageManager.getAllImages()
       const image = images.find(img => img.id === req.params.id)
 
       if (!image) {
         return res.status(404).json({ error: '镜像不存在' })
       }
 
-      const imageInfo = await ImageManager.getImageInfo(image.path)
+      const imageInfo = await imageManager.getImageInfo(image.path)
       res.json(imageInfo)
     } catch (error) {
       res.status(500).json({ error: error.message })
@@ -56,21 +57,21 @@ class ImageController {
   // DELETE /images/:id
   async deleteImageById(req, res) {
     try {
-      const images = await ImageManager.getAllImages()
+      const images = await imageManager.getAllImages()
       const image = images.find(img => img.id === req.params.id)
 
       if (!image) {
         return res.status(404).json({ error: '镜像不存在' })
       }
 
-      const result = await ImageManager.deleteImage(image.path)
+      const result = await imageManager.deleteImage(image.path)
       res.json(result)
     } catch (error) {
       res.status(500).json({ error: error.message })
     }
   }
 
-  //PUT rename image
+  // PUT rename image
   async renameImageById(req, res) {
     try {
       const { newName } = req.body
@@ -79,21 +80,21 @@ class ImageController {
         return res.status(400).json({ error: '新名称不能为空' })
       }
 
-      const images = await ImageManager.getAllImages()
+      const images = await imageManager.getAllImages()
       const image = images.find(img => img.id === req.params.id)
 
       if (!image) {
         return res.status(404).json({ error: '镜像不存在' })
       }
 
-      const result = await ImageManager.renameImage(image.path, newName)
+      const result = await imageManager.renameImage(image.path, newName)
       res.json(result)
     } catch (error) {
       res.status(500).json({ error: error.message })
     }
   }
 
-  //POST create disk image
+  // POST create disk image
   async createDiskImage(req, res) {
     try {
       const { name, size, format } = req.body
@@ -102,14 +103,14 @@ class ImageController {
         return res.status(400).json({ error: '名称和大小不能为空' })
       }
 
-      const result = await ImageManager.createDiskImage(name, size, format)
+      const result = await imageManager.createDiskImage(name, size, format)
       res.json(result)
     } catch (error) {
       res.status(500).json({ error: error.message })
     }
   }
 
-  //POST upload image
+  // POST upload image
   async uploadImage(req, res) {
     try {
       if (!req.file) {
@@ -129,7 +130,7 @@ class ImageController {
         success: true,
         message: '文件上传成功',
         image: {
-          id: require('crypto').createHash('md5').update(filePath).digest('hex'),
+          id: crypto.createHash('md5').update(filePath).digest('hex'),
           name: req.file.originalname,
           path: filePath,
           size: stats.size,
@@ -150,7 +151,7 @@ const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     // 根据文件类型选择目标目录
     const isISO = file.originalname.toLowerCase().endsWith('.iso')
-    const destDir = isISO ? ImageManager.isoDir : ImageManager.diskDir
+    const destDir = isISO ? imageManager.isoDir : imageManager.diskDir
     cb(null, destDir)
   },
   filename: (req, file, cb) => {
@@ -166,7 +167,4 @@ const upload = multer({
 
 const imageController = new ImageController()
 
-module.exports = {
-  uploadImageFile: upload.single('file'),
-  imageController,
-}
+export default { uploadImageFile: upload.single('file'), imageController }

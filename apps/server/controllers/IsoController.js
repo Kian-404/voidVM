@@ -1,12 +1,12 @@
-const fs = require('fs').promises
-const path = require('path')
+import fs from 'fs/promises'
+import path from 'path'
 
 class IsoController {
   // GET /iso
   async getIsos(req, res) {
     try {
       // ISO 文件夹路径，根据你的项目结构调整
-      const isoDir = path.join(__dirname, '../iso')
+      const isoDir = path.join(path.dirname(new URL(import.meta.url).pathname), '../iso')
 
       // 确保目录存在
       try {
@@ -68,4 +68,7 @@ class IsoController {
   }
 }
 
-module.exports = new IsoController()
+// 创建 IsoController 实例并导出
+const isoController = new IsoController()
+
+export { isoController }

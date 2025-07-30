@@ -1,7 +1,11 @@
 // controllers/snapshotController.js
-const snapshotService = require('../services/snapshotService')
+import snapshotService from '../services/snapshotService.js'
 
 class SnapshotController {
+  constructor() {
+    this.snapshotService = new snapshotService()
+  }
+
   /**
    * 创建快照
    */
@@ -25,7 +29,7 @@ class SnapshotController {
         })
       }
 
-      const result = await snapshotService.createSnapshot({
+      const result = await this.snapshotService.createSnapshot({
         vmName,
         snapshotName,
         description: description || '',
@@ -59,7 +63,7 @@ class SnapshotController {
         })
       }
 
-      const result = await snapshotService.loadSnapshot({
+      const result = await this.snapshotService.loadSnapshot({
         vmName,
         snapshotName,
       })
@@ -93,10 +97,10 @@ class SnapshotController {
         })
       }
 
-      const result = await snapshotService.getSnapshots({
+      const result = await this.snapshotService.getSnapshots({
         vmName,
-        page: parseInt(page),
-        limit: parseInt(limit),
+        page: parseInt(page, 10),
+        limit: parseInt(limit, 10),
         sortBy,
         order,
       })
@@ -128,7 +132,7 @@ class SnapshotController {
         })
       }
 
-      await snapshotService.deleteSnapshot({
+      const result = await this.snapshotService.deleteSnapshot({
         vmName,
         snapshotName,
       })
@@ -136,6 +140,7 @@ class SnapshotController {
       res.json({
         success: true,
         message: `快照 "${snapshotName}" 删除成功`,
+        data: result,
       })
     } catch (error) {
       console.error('删除快照失败:', error)
@@ -160,7 +165,7 @@ class SnapshotController {
         })
       }
 
-      const result = await snapshotService.getSnapshotDetail({
+      const result = await this.snapshotService.getSnapshotDetail({
         vmName,
         snapshotName,
       })
@@ -201,7 +206,7 @@ class SnapshotController {
         })
       }
 
-      const result = await snapshotService.renameSnapshot({
+      const result = await this.snapshotService.renameSnapshot({
         vmName,
         oldName: snapshotName,
         newName,
@@ -223,4 +228,7 @@ class SnapshotController {
   }
 }
 
-module.exports = new SnapshotController()
+// 创建 SnapshotController 实例并导出
+const snapshotController = new SnapshotController()
+
+export { snapshotController }

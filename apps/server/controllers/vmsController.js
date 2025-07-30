@@ -1,5 +1,5 @@
 // controllers/vmsController.js
-const vmsService = require('../services/vmsService')
+import vmsService from '../services/vmsService.js'
 
 class VmsController {
   /**
@@ -41,7 +41,7 @@ class VmsController {
       console.log('VM created successfully:', newVM)
     } catch (error) {
       console.error('Failed to create VM:', error)
-      res.status(400).json({ error: error.message })
+      res.status(400).json({ error: error.message || '创建虚拟机失败' })
     }
   }
 
@@ -54,7 +54,7 @@ class VmsController {
       res.json(vmsList)
     } catch (error) {
       console.error('Failed to get VMs:', error)
-      res.status(500).json({ error: error.message })
+      res.status(500).json({ error: error.message || '获取虚拟机列表失败' })
     }
   }
 
@@ -77,7 +77,7 @@ class VmsController {
         network,
       } = req.body.config
 
-      console.log('req.body', req.body)
+      console.log('req.body.config', req.body.config)
 
       const vmConfig = {
         vmName: name || vmName,
@@ -100,7 +100,7 @@ class VmsController {
       res.json(result)
     } catch (error) {
       console.error('Failed to start VM:', error)
-      res.status(404).json({ error: error.message })
+      res.status(404).json({ error: error.message || '虚拟机未找到' })
     }
   }
 
@@ -117,7 +117,7 @@ class VmsController {
       res.json(result)
     } catch (error) {
       console.error('Failed to stop VM:', error)
-      res.status(404).json({ error: error.message })
+      res.status(404).json({ error: error.message || '虚拟机未找到' })
     }
   }
 
@@ -134,7 +134,7 @@ class VmsController {
       res.json(result)
     } catch (error) {
       console.error('Failed to restart VM:', error)
-      res.status(404).json({ error: error.message })
+      res.status(404).json({ error: error.message || '虚拟机未找到' })
     }
   }
 
@@ -148,7 +148,7 @@ class VmsController {
       res.json(result)
     } catch (error) {
       console.error('Failed to delete VM:', error)
-      res.status(404).json({ error: error.message })
+      res.status(404).json({ error: error.message || '虚拟机未找到' })
     }
   }
 
@@ -158,6 +158,7 @@ class VmsController {
   async startNoVNC(req, res) {
     try {
       const { vncPort, webPort } = req.body
+
       console.log('vncPort', vncPort)
       console.log('webPort', webPort)
 
@@ -165,23 +166,27 @@ class VmsController {
       res.json(novnc)
     } catch (error) {
       console.error('Failed to start NoVNC:', error)
-      res.status(400).json({ error: error.message })
+      res.status(400).json({ error: error.message || '启动 NoVNC 服务失败' })
     }
   }
 
   /**
-   * 为指定VM启动 NoVNC 服务
+   * 为指定 VM 启动 NoVNC 服务
    */
   async startNoVNCForVM(req, res) {
     try {
       const vmName = req.params.name
       const { vncPort, webPort } = req.body
 
+      console.log(`Starting NoVNC for VM: ${vmName}`)
+      console.log('vncPort', vncPort)
+      console.log('webPort', webPort)
+
       const novnc = await vmsService.startNoVNC(vncPort, webPort)
       res.json(novnc)
     } catch (error) {
-      console.error('Failed to start NoVNC for VM:', error)
-      res.status(400).json({ error: error.message })
+      console.error(`Failed to start NoVNC for VM: ${vmName}`, error)
+      res.status(400).json({ error: error.message || '启动 NoVNC 服务失败' })
     }
   }
 
@@ -198,9 +203,9 @@ class VmsController {
     } catch (error) {
       console.error('Failed to update VM config:', error)
       if (error.message.includes('找不到虚拟机')) {
-        res.status(404).json({ error: error.message })
+        res.status(404).json({ error: error.message || '虚拟机未找到' })
       } else {
-        res.status(500).json({ error: error.message })
+        res.status(500).json({ error: error.message || '更新虚拟机配置失败' })
       }
     }
   }
@@ -240,23 +245,26 @@ class VmsController {
       if (error.message.includes('not found')) {
         return res.status(404).json({
           success: false,
-          error: error.message,
+          error: error.message || '虚拟机未找到',
         })
       }
 
       if (error.message.includes('not running')) {
         return res.status(400).json({
           success: false,
-          error: error.message,
+          error: error.message || '虚拟机未运行',
         })
       }
 
       return res.status(500).json({
         success: false,
-        error: `Failed to toggle ISO mount: ${error.message}`,
+        error: `Failed to toggle ISO mount: ${error.message || '未知错误'}`,
       })
     }
   }
 }
 
-module.exports = new VmsController()
+// 创建 VmsController 实例并导出
+const vmsController = new VmsController()
+
+export default vmsController

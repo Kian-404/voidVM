@@ -1,5 +1,5 @@
 // src/controllers/networkController.js
-const NetworkService = require('../services/networkService')
+import NetworkService from '../services/networkService.js'
 
 class NetworkController {
   constructor() {
@@ -77,7 +77,7 @@ class NetworkController {
       res.status(201).json({
         success: true,
         data: tap,
-        message: `TAP interfaceNet ${name} created successfully`,
+        message: `TAP interface ${name} created successfully`,
       })
     } catch (error) {
       res.status(400).json({
@@ -141,7 +141,6 @@ class NetworkController {
     try {
       const { interfaceNet } = req.params
 
-      // 获取网络统计信息的实现
       const stats = await this.networkService.getNetworkStats(interfaceNet)
 
       res.json({
@@ -172,6 +171,7 @@ class NetworkController {
       })
     }
   }
+
   // 获取单个 TAP 接口详细信息
   async getTapInterfaceDetails(req, res) {
     try {
@@ -189,6 +189,7 @@ class NetworkController {
       })
     }
   }
+
   // 删除 TAP 接口
   async deleteTapInterface(req, res) {
     try {
@@ -206,6 +207,7 @@ class NetworkController {
       })
     }
   }
+
   // 获取完整网络信息
   async getAllNetworkInfo(req, res) {
     try {
@@ -224,4 +226,7 @@ class NetworkController {
   }
 }
 
-module.exports = NetworkController
+// 创建 NetworkController 实例并导出
+const networkController = new NetworkController()
+
+export { networkController }
