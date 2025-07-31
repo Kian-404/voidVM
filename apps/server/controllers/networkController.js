@@ -229,4 +229,4 @@ class NetworkController {
 // 创建 NetworkController 实例并导出
 const networkController = new NetworkController()
 
-export { networkController }
+export default { networkController }
