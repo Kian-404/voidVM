@@ -1,8 +1,8 @@
 // routes/isos.js
-const express = require('express')
-const router = express.Router()
+import express from 'express'
+import IsoController from '../controllers/IsoController'
 
-const IsoController = require('../controllers/IsoController')
+const router = express.Router()
 
 /**
  * @swagger
@@ -36,4 +36,4 @@ const IsoController = require('../controllers/IsoController')
  */
 router.get('/', IsoController.getIsos)
 
-module.exports = router
+export default router

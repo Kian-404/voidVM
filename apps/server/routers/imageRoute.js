@@ -1,9 +1,7 @@
-const express = require('express')
+import express from 'express'
+import { uploadImageFile, imageController } from '../controllers/ImageController'
+
 const router = express.Router()
-const {
-  uploadImageFile,
-  imageController: ImageController,
-} = require('../controllers/ImageController')
 
 /**
  * @swagger
@@ -17,7 +15,7 @@ const {
  *       200:
  *         description: 成功获取镜像列表
  */
-router.get('/', ImageController.getAllImages)
+router.get('/', imageController.getAllImages)
 
 /**
  * @swagger
@@ -31,7 +29,7 @@ router.get('/', ImageController.getAllImages)
  *       200:
  *         description: 成功获取 ISO 镜像列表
  */
-router.get('/iso', ImageController.getISOImages)
+router.get('/iso', imageController.getISOImages)
 
 /**
  * @swagger
@@ -45,7 +43,7 @@ router.get('/iso', ImageController.getISOImages)
  *       200:
  *         description: 成功获取磁盘镜像列表
  */
-router.get('/disk', ImageController.getDiskImages)
+router.get('/disk', imageController.getDiskImages)
 
 /**
  * @swagger
@@ -66,7 +64,7 @@ router.get('/disk', ImageController.getDiskImages)
  *       404:
  *         description: 镜像不存在
  */
-router.get('/:id', ImageController.getImageById)
+router.get('/:id', imageController.getImageById)
 
 /**
  * @swagger
@@ -87,7 +85,7 @@ router.get('/:id', ImageController.getImageById)
  *       404:
  *         description: 镜像不存在
  */
-router.delete('/:id', ImageController.deleteImageById)
+router.delete('/:id', imageController.deleteImageById)
 
 /**
  * @swagger
@@ -118,7 +116,7 @@ router.delete('/:id', ImageController.deleteImageById)
  *       404:
  *         description: 镜像不存在
  */
-router.put('/:id/rename', ImageController.renameImageById)
+router.put('/:id/rename', imageController.renameImageById)
 
 /**
  * @swagger
@@ -150,7 +148,7 @@ router.put('/:id/rename', ImageController.renameImageById)
  *       400:
  *         description: 参数错误
  */
-router.post('/disk/create', ImageController.createDiskImage)
+router.post('/disk/create', imageController.createDiskImage)
 
 /**
  * @swagger
@@ -175,6 +173,6 @@ router.post('/disk/create', ImageController.createDiskImage)
  *       400:
  *         description: 上传失败
  */
-router.post('/upload', uploadImageFile, ImageController.uploadImage)
+router.post('/upload', uploadImageFile, imageController.uploadImage)
 
-module.exports = router
+export default router

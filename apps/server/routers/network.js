@@ -1,6 +1,7 @@
 // src/routes/network.js
-const express = require('express')
-const NetworkController = require('../controllers/networkController')
+
+import express from 'express'
+import { NetworkController } from '../controllers/networkController'
 const router = express.Router()
 const networkController = new NetworkController()
 
@@ -956,4 +957,4 @@ router.delete('/tap/:name', networkController.deleteTapInterface.bind(networkCon
  */
 router.get('/info', networkController.getAllNetworkInfo.bind(networkController))
 
-module.exports = router
+export default router

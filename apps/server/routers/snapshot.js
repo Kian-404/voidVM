@@ -1,7 +1,7 @@
 // routers/snapshot.js
-const express = require('express')
+import express from 'express'
+import snapshotController from '../controllers/snapshotController'
 const router = express.Router()
-const snapshotController = require('../controllers/snapshotController')
 
 /**
  * @swagger
@@ -596,4 +596,4 @@ router.delete('/:vmName/:snapshotName', snapshotController.deleteSnapshot)
  */
 router.put('/:vmName/:snapshotName/rename', snapshotController.renameSnapshot)
 
-module.exports = router
+export default router

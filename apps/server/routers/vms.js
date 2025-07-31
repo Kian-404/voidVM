@@ -1,6 +1,6 @@
 // routes/vms.js
-const express = require('express')
-const vmsController = require('../controllers/vmsController')
+import express from 'express'
+import vmsController from '../controllers/vmsController'
 const router = express.Router()
 
 /**
@@ -552,4 +552,4 @@ router.put('/vms/:name/config', vmsController.updateVMConfig)
  */
 router.post('/vms/:name/toggleMountIso', vmsController.toggleMountIso)
 
-module.exports = router
+export default router

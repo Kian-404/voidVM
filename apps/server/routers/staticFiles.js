@@ -1,11 +1,17 @@
-const express = require('express')
-const path = require('path')
-const fs = require('fs').promises
-const multer = require('multer')
-const archiver = require('archiver')
-const mime = require('mime-types')
+import express from 'express'
+import path from 'path'
+import fs from 'fs/promises'
+import multer from 'multer'
+import archiver from 'archiver'
+import mime from 'mime-types'
+import { fileURLToPath } from 'url'
 
 const router = express.Router()
+
+// 配置文件存储路径
+// 获取当前文件的目录
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
 
 // 配置文件存储路径
 const STATIC_FILES_DIR = path.join(__dirname, '../static-files')
@@ -22,9 +28,7 @@ const ensureDirectoryExists = async dirPath => {
 // 配置multer用于文件上传
 const storage = multer.diskStorage({
   destination: async (req, file, cb) => {
-    // 从文件字段中获取路径信息，如果没有则使用根目录
     const uploadPath = req.body.path ? path.join(STATIC_FILES_DIR, req.body.path) : STATIC_FILES_DIR
-
     try {
       await ensureDirectoryExists(uploadPath)
       cb(null, uploadPath)
@@ -39,16 +43,7 @@ const storage = multer.diskStorage({
 })
 
 const upload = multer({
-  storage: multer.diskStorage({
-    destination: async (req, file, cb) => {
-      // 延迟到路由处理中确定路径
-      cb(null, STATIC_FILES_DIR)
-    },
-    filename: (req, file, cb) => {
-      const originalName = Buffer.from(file.originalname, 'latin1').toString('utf8')
-      cb(null, `temp_${Date.now()}_${originalName}`)
-    },
-  }),
+  storage,
   limits: {
     fileSize: 100 * 1024 * 1024,
   },
@@ -342,4 +337,4 @@ router.put('/content', async (req, res) => {
   }
 })
 
-module.exports = router
+export default router

@@ -1,14 +1,14 @@
 // routes/index.js
-const express = require('express')
-const vmRoutes = require('./vms.js')
-const isoRoutes = require('./isos.js')
-const fileTransferRoutes = require('./fileTransfer')
-const systemMonitorRoutes = require('./systemMonitor')
-const imageRoutes = require('./imageRoute')
-const readMeRoute = require('./readmeRoutes')
-const networkRoutes = require('./network')
-const staticFilesRoutes = require('./staticFiles') // 新增
-const snapshotRoutes = require('./snapshot')
+import express from 'express'
+import vmRoutes from './vms.js'
+import isoRoutes from './isos.js'
+import fileTransferRoutes from './fileTransfer'
+import systemMonitorRoutes from './systemMonitor'
+import imageRoutes from './imageRoute'
+import readMeRoute from './readmeRoutes'
+import networkRoutes from './network'
+import staticFilesRoutes from './staticFiles'
+import snapshotRoutes from './snapshot'
 
 const router = express.Router()
 
@@ -20,9 +20,9 @@ router.use('/api/systemMonitor', systemMonitorRoutes)
 router.use('/api/images', imageRoutes)
 router.use('/api/readme', readMeRoute)
 router.use('/api/network', networkRoutes)
-router.use('/api/static-files', staticFilesRoutes) // 新增
+router.use('/api/static-files', staticFilesRoutes)
 router.use('/api/snapshots', snapshotRoutes)
 
 // 可以添加更多路由...
 
-module.exports = router
+export default router

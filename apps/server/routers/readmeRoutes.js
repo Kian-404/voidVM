@@ -1,7 +1,6 @@
 // routes/readmeRoutes.js
-const express = require('express')
-const router = express.Router()
-const ReadmeService = require('../services/ReadmeService')
+import express from 'express'
+import { ReadmeService } from '../services/ReadmeService'
 
 const readmeService = new ReadmeService()
 
@@ -101,4 +100,4 @@ router.get('/frontend', async (req, res) => {
   }
 })
 
-module.exports = router
+export default router

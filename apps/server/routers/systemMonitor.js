@@ -1,7 +1,7 @@
 // routes/isos.js
-const express = require('express')
+import express from 'express'
+import SystemMonitorController from '../controllers/systemMonitorController'
 const router = express.Router()
-const SystemMonitorController = require('../controllers/systemMonitorController')
 
 /**
  * @swagger
@@ -34,4 +34,4 @@ const SystemMonitorController = require('../controllers/systemMonitorController'
  */
 router.get('/info', SystemMonitorController.getSystemMonitorInfo)
 
-module.exports = router
+export default router
